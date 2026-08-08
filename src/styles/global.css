@@ -168,15 +168,29 @@ input {
   border-top: 0;
 }
 
+/* the form takes one column and the caution the other, so a wide screen does
+   not leave half the band empty */
 .controls-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  max-width: 40rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 3rem;
+  align-items: start;
 }
 
-.controls-warning {
+.control-form,
+.source-list {
+  grid-column: 1;
+}
+
+/* pinned to the first row so it stays beside the field it warns about, with or
+   without the source list; the callout rule is dropped because nothing sits
+   across from it in the left column */
+.callout.controls-warning {
+  grid-column: 2;
+  grid-row: 1;
   margin: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .band-heading {
@@ -758,6 +772,18 @@ p.callout {
 @media (max-width: 48rem) {
   .app-shell {
     padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .controls-main {
+    grid-template-columns: 1fr;
+  }
+
+  /* stacked, the note follows other content again, so the rule earns its place */
+  .callout.controls-warning {
+    grid-column: 1;
+    grid-row: auto;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rule);
   }
 
   .action-row {

@@ -253,9 +253,16 @@ export function SeedTool() {
             </p>
           ) : null}
 
-          <p className="callout controls-warning">
-            Do not enter a wallet recovery phrase as a shuffle code.
-          </p>
+          <div className="callout controls-warning">
+            <strong>
+              Do not enter a wallet recovery phrase as a shuffle code.
+            </strong>
+            <p>
+              The code only sets which word belongs to each card pair, and it
+              appears in the page URL. Your phrase comes from the shuffled deck,
+              not from this code.
+            </p>
+          </div>
         </div>
       </section>
 
