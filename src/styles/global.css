@@ -109,9 +109,9 @@ input {
 
 /* a masthead, closed by the double rule that printed mastheads use */
 .app-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem 1rem;
   align-items: center;
   padding-bottom: 1.1rem;
   border-bottom: 3px double var(--ink-1);
@@ -141,13 +141,14 @@ input {
   letter-spacing: -0.015em;
 }
 
+/* the tagline is a deck line under the title, never a right-hand float */
 .app-header p {
-  max-width: 20rem;
-  margin: 0 0 0 auto;
+  grid-column: 1 / -1;
+  max-width: 34rem;
+  margin: 0;
   color: var(--ink-2);
   font-size: 0.8125rem;
   line-height: 1.5;
-  text-align: right;
 }
 
 /* every section is a band separated by a hairline, not a panel */
@@ -762,11 +763,6 @@ p.callout {
 @media (max-width: 48rem) {
   .app-shell {
     padding: 1.5rem 1rem 2.5rem;
-  }
-
-  .app-header p {
-    flex-basis: 100%;
-    margin-left: 0;
   }
 
   .action-row {
