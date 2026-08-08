@@ -17,7 +17,9 @@ import {
 
 const PAGE_WIDTH = 612;
 const PAGE_HEIGHT = 792;
-const PAGE_COUNT = 13;
+const TABLE_PAGE_COUNT = 13;
+// an instructions page precedes the table so the procedure stays with the printout
+const TOTAL_PAGE_COUNT = TABLE_PAGE_COUNT + 1;
 const ROWS_PER_PAGE = 4;
 const PAGE_MARGIN = 36;
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
@@ -57,12 +59,16 @@ export async function createLookupPdf(table: LookupTable): Promise<Uint8Array> {
   document.setCreator("OfflineSeeds");
   document.setProducer("OfflineSeeds");
 
-  for (let pageIndex = 0; pageIndex < PAGE_COUNT; pageIndex += 1) {
+  const instructionsPage = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  drawHeader(instructionsPage, fonts, table.seed, 1);
+  drawInstructions(instructionsPage, fonts);
+
+  for (let pageIndex = 0; pageIndex < TABLE_PAGE_COUNT; pageIndex += 1) {
     const page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
     const start = pageIndex * ROWS_PER_PAGE;
     const rows = table.rows.slice(start, start + ROWS_PER_PAGE);
 
-    drawHeader(page, fonts, table.seed, pageIndex);
+    drawHeader(page, fonts, table.seed, pageIndex + 2);
     rows.forEach((row, rowIndex) => drawLookupRow(page, fonts, row, rowIndex));
     drawFooter(page, fonts);
   }
@@ -70,15 +76,121 @@ export async function createLookupPdf(table: LookupTable): Promise<Uint8Array> {
   return document.save();
 }
 
+type InstructionSection = Readonly<{
+  title: string;
+  lines: readonly string[];
+}>;
+
+const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
+  {
+    title: "Materials",
+    lines: [
+      "- A complete 52-card deck without jokers",
+      "- This printed lookup table, pages 2-14",
+      "- Pen and paper",
+      "- An offline wallet that can generate 3 random entropy bits and calculate word 24",
+      "- A private room without cameras or microphones",
+    ],
+  },
+  {
+    title: "Prepare",
+    lines: [
+      "1. Count all 52 distinct cards. Remove the jokers and advertising cards.",
+      "2. Choose a clear left position for the first card of each pair. Pair order matters.",
+      "3. Test the wallet's final-word function with disposable words before the real run.",
+    ],
+  },
+  {
+    title: "Generate words 1-23. For each word:",
+    lines: [
+      "1. Return all 52 cards to the deck and shuffle thoroughly.",
+      "2. Draw the top card to the left. Draw the next card to the right.",
+      "3. Find the first card in the large box at the left edge of a table row.",
+      "4. Find the second card in that row. A dash is a blank pair: return the",
+      "   cards, shuffle the full deck, and try again.",
+      "5. Otherwise, record the word. Stop after 23 words.",
+    ],
+  },
+  {
+    title: "Rules",
+    lines: [
+      "- Accept every nonblank entry, including same-suit pairs.",
+      "- Never reverse a pair to avoid a blank. Never redraw only one card.",
+      "- Accept repeated cards, pairs, and words. Do not replace a result because it looks unusual.",
+      "- Keep accepted and rejected draws private.",
+    ],
+  },
+  {
+    title: "Word 24",
+    lines: [
+      "1. Enter the 23 words directly on the offline wallet. Do not enter them into",
+      "   a phone or a general-purpose computer.",
+      "2. Let the wallet generate the final 3 entropy bits and the 8-bit checksum for word 24.",
+      "3. Record word 24 with the first 23 words. Confirm the complete phrase on the device.",
+      "4. Destroy the temporary notes.",
+      "A wallet that sets the 3 bits deterministically adds no entropy. The phrase then has 253 bits.",
+    ],
+  },
+  {
+    title: "What to expect",
+    lines: [
+      "- Approximately 77.2% of draws give a word: 2,048 of 2,652 ordered pairs.",
+      "- Expect approximately 30 attempts for 23 words. Blank pairs are normal.",
+      "- The cards supply 253 bits. The wallet supplies 3 bits. The total is 256 bits.",
+    ],
+  },
+];
+
+function drawInstructions(page: PDFPage, fonts: PdfFonts) {
+  const titleSize = 10;
+  const lineSize = 9;
+  const lineHeight = 14;
+  const sectionGap = 12;
+  let y = PAGE_HEIGHT - PAGE_MARGIN - HEADER_HEIGHT - 26;
+
+  page.drawText("How to use this table", {
+    x: PAGE_MARGIN,
+    y,
+    size: 13,
+    font: fonts.bold,
+    color: BLACK,
+  });
+  y -= 26;
+
+  for (const section of INSTRUCTION_SECTIONS) {
+    page.drawText(section.title, {
+      x: PAGE_MARGIN,
+      y,
+      size: titleSize,
+      font: fonts.bold,
+      color: BLACK,
+    });
+    y -= lineHeight + 2;
+
+    for (const line of section.lines) {
+      page.drawText(line, {
+        x: PAGE_MARGIN,
+        y,
+        size: lineSize,
+        font: fonts.regular,
+        color: BLACK,
+      });
+      y -= lineHeight;
+    }
+
+    y -= sectionGap;
+  }
+}
+
 function drawHeader(
   page: PDFPage,
   fonts: PdfFonts,
   shuffleCode: string,
-  pageIndex: number,
+  pageNumber: number,
 ) {
   const top = PAGE_HEIGHT - PAGE_MARGIN;
   const baseline = top - 11;
-  const pageLabel = `${pageIndex + 1} / ${PAGE_COUNT}`;
+  const pageLabel = `${pageNumber} / ${TOTAL_PAGE_COUNT}`;
   const pageLabelWidth = fonts.regular.widthOfTextAtSize(pageLabel, 8);
   const codeAreaStart = PAGE_MARGIN + 82;
   const codeAreaEnd = PAGE_WIDTH - PAGE_MARGIN - pageLabelWidth - 18;

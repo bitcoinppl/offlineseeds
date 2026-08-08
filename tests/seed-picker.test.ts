@@ -148,7 +148,7 @@ test("creates a complete Letter PDF for the lookup", async () => {
     PDFDocument.load(bytes),
   );
 
-  assert.equal(document.getPageCount(), 13);
+  assert.equal(document.getPageCount(), 14);
   assert.deepEqual(document.getPage(0).getSize(), {
     width: 612,
     height: 792,

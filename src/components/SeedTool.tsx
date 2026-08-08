@@ -21,7 +21,9 @@ import {
 } from "../adapters/seed-picker";
 
 const ROWS_PER_PAGE = 4;
-const PAGE_COUNT = 13;
+const TABLE_PAGE_COUNT = 13;
+// the downloadable PDF adds an instructions page before the 13 table pages
+const TOTAL_PAGE_COUNT = TABLE_PAGE_COUNT + 1;
 
 // typing must not fight the field, so the debounced path opts out of the
 // write-back that seeded and random generation rely on
@@ -126,7 +128,7 @@ export function SeedTool() {
   const pages = useMemo(() => {
     if (!table) return [];
 
-    return Array.from({ length: PAGE_COUNT }, (_, pageIndex) =>
+    return Array.from({ length: TABLE_PAGE_COUNT }, (_, pageIndex) =>
       table.rows.slice(
         pageIndex * ROWS_PER_PAGE,
         pageIndex * ROWS_PER_PAGE + ROWS_PER_PAGE,
@@ -272,27 +274,46 @@ export function SeedTool() {
         <div className="band-heading">
           <h2 id="guide-title">Make the first 23 words</h2>
           <p>
-            Use the printed PDF and a shuffled deck. An offline wallet adds
-            entropy and the checksum for word 24.
+            Use the printed PDF, a full 52-card deck, and a private room. An
+            offline wallet adds entropy and the checksum for word 24.
           </p>
         </div>
         <ol className="instruction-list">
           <li>
             <span>1</span>
             <p>
-              <strong>Download the PDF.</strong> Keep all 13 pages together.
-              Print on Letter paper at 100% scale when you are ready.
+              <strong>Prepare the deck.</strong> Count all 52 distinct cards.
+              Remove the jokers and advertising cards. Work in a private room
+              without cameras or microphones.
             </p>
           </li>
           <li>
             <span>2</span>
             <p>
-              <strong>Draw one pair.</strong> Put all 52 cards in the deck and
-              shuffle well. Deal two cards face up without replacement.
+              <strong>Test the wallet first.</strong> Use disposable test words
+              to confirm that the offline wallet can generate 3 random entropy
+              bits and calculate word 24 from 23 words. Do this before you draw
+              the real words.
             </p>
           </li>
           <li>
             <span>3</span>
+            <p>
+              <strong>Download the PDF.</strong> Keep all 14 pages together.
+              Print on Letter paper at 100% scale. Page 1 repeats these
+              instructions for offline use.
+            </p>
+          </li>
+          <li>
+            <span>4</span>
+            <p>
+              <strong>Draw one ordered pair.</strong> Return all 52 cards to the
+              deck and shuffle well. Draw the top card and put it on the left.
+              Draw the next card and put it on the right. Pair order matters.
+            </p>
+          </li>
+          <li>
+            <span>5</span>
             <p>
               <strong>Read one word.</strong> Find the first card in the large
               box at the left. Find the second card in that row. If the pair has
@@ -301,15 +322,28 @@ export function SeedTool() {
             </p>
           </li>
           <li>
-            <span>4</span>
+            <span>6</span>
             <p>
-              <strong>Shuffle again for each word.</strong> Return all cards to
-              the deck before each draw. Do not reject a pair only because its
-              suits match. Stop after you record 23 words.
+              <strong>Repeat until you have 23 words.</strong> Shuffle the full
+              deck before each attempt. Expect approximately 30 attempts. Blank
+              pairs are normal.
             </p>
           </li>
         </ol>
         <div className="note-columns">
+          <div className="callout">
+            <strong>Follow the draw rules exactly.</strong>
+            <ul className="rule-list">
+              <li>Accept every nonblank entry, including same-suit pairs.</li>
+              <li>Never reverse a pair to avoid a blank.</li>
+              <li>Never redraw only one card.</li>
+              <li>
+                Accept repeated cards, pairs, and words. Do not replace a result
+                because it looks unusual.
+              </li>
+              <li>Keep accepted and rejected draws private.</li>
+            </ul>
+          </div>
           <div className="callout">
             <strong>All 2,048 words can occur.</strong>
             <p>
@@ -321,15 +355,144 @@ export function SeedTool() {
           <div className="callout">
             <strong>Use a compatible offline wallet for word 24.</strong>
             <p>
-              Record 23 words. The wallet must generate the final 3 entropy bits
-              and calculate the 8-bit checksum. Do not pick word 24 from this
-              table.
+              Enter the 23 words directly on the offline wallet. Let the wallet
+              generate the final 3 entropy bits and calculate the 8-bit checksum
+              for word 24. Record word 24 with the first 23 words, confirm the
+              complete phrase on the device, and then destroy the temporary
+              notes. Do not pick word 24 from this table.
             </p>
             <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
               Read the BIP39 specification
             </a>
           </div>
+          <div className="callout">
+            <strong>Keep the words off computers.</strong>
+            <p>
+              Do not enter the words into this site, a phone, or any
+              general-purpose computer. The first electronic entry of the 23
+              words is on the offline wallet itself.
+            </p>
+          </div>
         </div>
+      </section>
+
+      <section className="band screen-only" aria-labelledby="entropy-title">
+        <div className="band-heading">
+          <h2 id="entropy-title">Entropy analysis</h2>
+          <p>
+            An ideal shuffle makes each ordered pair equally likely. The numbers
+            below are exact under that assumption.
+          </p>
+        </div>
+        <div className="note-columns">
+          <div className="callout">
+            <strong>Pair space.</strong>
+            <p>
+              Two ordered cards give 52 × 51 = 2,652 possible pairs. The table
+              accepts 2,048 pairs: 2,028 with different suits and 20 with the
+              same suit. The other 604 pairs are blank. Each accepted pair maps
+              to exactly one BIP39 word.
+            </p>
+          </div>
+          <div className="callout">
+            <strong>Bits per word.</strong>
+            <p>
+              A draw is accepted with probability 2,048 / 2,652 ≈ 77.2%. Each
+              accepted word is uniform over 2,048 possibilities and supplies
+              log₂(2,048) = 11 bits. The 23 words supply 253 bits. The wallet
+              adds 3 random bits for a total of 256 bits. The 8-bit checksum
+              adds no randomness.
+            </p>
+          </div>
+          <div className="callout">
+            <strong>Expected attempts.</strong>
+            <p>
+              23 accepted words take approximately 29.8 attempts with
+              approximately 6.8 blanks. A run with no blank at all has only a
+              0.26% probability.
+            </p>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Attempts</th>
+                  <th scope="col">Probability of 23 words</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>30</td>
+                  <td>62.8%</td>
+                </tr>
+                <tr>
+                  <td>34</td>
+                  <td>93.3%</td>
+                </tr>
+                <tr>
+                  <td>35</td>
+                  <td>96.1%</td>
+                </tr>
+                <tr>
+                  <td>38</td>
+                  <td>99.4%</td>
+                </tr>
+                <tr>
+                  <td>41</td>
+                  <td>99.93%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="callout">
+            <strong>Effect of imperfect shuffling.</strong>
+            <p>
+              If the most likely word is β times more likely than uniform, and
+              the wallet supplies 3 independent bits, the min-entropy is 253 −
+              23 × log₂(β) + 3 bits. No fixed number of hand shuffles proves
+              uniformity, so the physical shuffle is the principal uncertainty.
+            </p>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Maximum word bias</th>
+                  <th scope="col">Min-entropy</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1×</td>
+                  <td>256.0 bits</td>
+                </tr>
+                <tr>
+                  <td>1.1×</td>
+                  <td>252.8 bits</td>
+                </tr>
+                <tr>
+                  <td>1.25×</td>
+                  <td>248.6 bits</td>
+                </tr>
+                <tr>
+                  <td>2×</td>
+                  <td>233.0 bits</td>
+                </tr>
+                <tr>
+                  <td>4×</td>
+                  <td>210.0 bits</td>
+                </tr>
+                <tr>
+                  <td>8×</td>
+                  <td>187.0 bits</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p className="callout">
+          Procedure and analysis adapted from{" "}
+          <a href="https://gist.github.com/BullishNode/840e2b001f611b9b1f45dc900510166d">
+            Generating a 24-Word BIP39 Phrase with Playing Cards
+          </a>
+          .
+        </p>
       </section>
 
       {selectedRow ? (
@@ -382,8 +545,10 @@ export function SeedTool() {
           <div className="band-heading">
             <h2 id="pdf-title">Printable PDF</h2>
             <p>
-              Use these 13 Letter pages during card draws. The live map above is
-              only a quick check. Page 1 is shown below as a preview.
+              The PDF has 14 Letter pages: one instructions page and 13 table
+              pages. Use the printed pages during card draws. The live map above
+              is only a quick check. The first table page is shown below as a
+              preview.
             </p>
           </div>
           <Button
@@ -394,7 +559,7 @@ export function SeedTool() {
             type="button"
           >
             <DownloadIcon data-icon="inline-start" />
-            {isDownloadingPdf ? "Creating PDF…" : "Download all 13 pages"}
+            {isDownloadingPdf ? "Creating PDF…" : "Download all 14 pages"}
           </Button>
         </div>
         <div className="page-list" aria-busy={isGenerating}>
@@ -413,7 +578,7 @@ export function SeedTool() {
         </div>
         {table ? (
           <p className="sr-only" aria-live="polite">
-            PDF ready: 13 Letter pages.
+            PDF ready: 14 Letter pages.
           </p>
         ) : null}
       </section>
@@ -435,8 +600,9 @@ function LookupPage({
       <header className="page-header">
         <strong>OfflineSeeds</strong>
         <span className="page-code">Shuffle code: {shuffleCode}</span>
+        {/* table pages follow the PDF instructions page, so numbering starts at 2 */}
         <span>
-          {pageIndex + 1} / {PAGE_COUNT}
+          {pageIndex + 2} / {TOTAL_PAGE_COUNT}
         </span>
       </header>
 

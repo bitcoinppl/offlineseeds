@@ -321,6 +321,50 @@ p.callout {
   margin-top: 0.3rem;
 }
 
+.rule-list {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.rule-list li + li {
+  margin-top: 0.25rem;
+}
+
+.rule-list li::marker {
+  color: var(--ink-3);
+}
+
+/* small figures set like a printed statistics table: rules, no fills */
+.data-table {
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.25rem 1.5rem 0.25rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+}
+
+.data-table th {
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .callout a {
   display: inline-block;
   margin-top: 0.5rem;
