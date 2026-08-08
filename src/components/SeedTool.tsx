@@ -252,19 +252,8 @@ export function SeedTool() {
               <span>{randomSources.map(({ label }) => label).join(" · ")}</span>
             </p>
           ) : null}
-        </div>
 
-        <div className="controls-notes">
-          <div className="callout">
-            <strong>New codes mix independent sources.</strong>
-            <p>
-              The browser uses Web Crypto and available bytes from RANDOM.ORG
-              and drand. It requires at least one network source and mixes the
-              bytes with SHA-256.
-            </p>
-          </div>
-
-          <p className="callout">
+          <p className="callout controls-warning">
             Do not enter a wallet recovery phrase as a shuffle code.
           </p>
         </div>
@@ -330,6 +319,104 @@ export function SeedTool() {
             </p>
           </li>
         </ol>
+      </section>
+
+      {selectedRow ? (
+        <section className="band screen-only" aria-labelledby="live-title">
+          <div className="band-heading">
+            <h2 id="live-title">Live map preview</h2>
+            <p>Check one first-card row before you use the full PDF.</p>
+          </div>
+          <div className="picker-scroll">
+            <div className="card-picker" aria-label="Choose the first card">
+              {CARDS.map((card) => (
+                <Button
+                  aria-label={`${card.rank} of ${card.suit}`}
+                  aria-pressed={card.index === selectedCardIndex}
+                  className={`deck-card-button card-${card.color}`}
+                  key={card.id}
+                  onClick={() => setSelectedCardIndex(card.index)}
+                  type="button"
+                  variant="ghost"
+                >
+                  {card.rank}
+                  {card.symbol}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="live-scroll">
+            <div className="live-row">
+              <div
+                className={`live-first-card card-${selectedRow.first.color}`}
+              >
+                <span>First card</span>
+                <strong>
+                  {selectedRow.first.rank}
+                  {selectedRow.first.symbol}
+                </strong>
+              </div>
+              <div className="live-grid" aria-label="Second-card words">
+                {selectedRow.entries.map((entry) => (
+                  <MappingCell entry={entry} key={entry.second.id} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="pdf-section" aria-labelledby="pdf-title">
+        <div className="band pdf-heading screen-only">
+          <div className="band-heading">
+            <h2 id="pdf-title">Printable PDF</h2>
+            <p>
+              The PDF has 14 Letter pages: one instructions page and 13 table
+              pages. Use the printed pages during card draws. The live map above
+              is only a quick check. The first table page is shown below as a
+              preview.
+            </p>
+          </div>
+          <Button
+            className="pdf-download-button"
+            disabled={!canDownloadPdf}
+            onClick={() => void downloadPdf()}
+            size="lg"
+            type="button"
+          >
+            <DownloadIcon data-icon="inline-start" />
+            {isDownloadingPdf ? "Creating PDF…" : "Download all 14 pages"}
+          </Button>
+        </div>
+        <div className="page-list" aria-busy={isGenerating}>
+          {table ? (
+            pages.map((rows, pageIndex) => (
+              <LookupPage
+                key={pageIndex}
+                pageIndex={pageIndex}
+                rows={rows}
+                shuffleCode={table.seed}
+              />
+            ))
+          ) : (
+            <p className="loading-copy screen-only">Generating the PDF…</p>
+          )}
+        </div>
+        {table ? (
+          <p className="sr-only" aria-live="polite">
+            PDF ready: 14 Letter pages.
+          </p>
+        ) : null}
+      </section>
+
+      <section className="band screen-only" aria-labelledby="notes-title">
+        <div className="band-heading">
+          <h2 id="notes-title">Draw rules and word 24</h2>
+          <p>
+            Follow these rules during draws. Finish the phrase only on a
+            compatible offline wallet.
+          </p>
+        </div>
         <div className="note-columns">
           <div className="callout">
             <strong>Follow the draw rules exactly.</strong>
@@ -493,94 +580,6 @@ export function SeedTool() {
           </a>
           .
         </p>
-      </section>
-
-      {selectedRow ? (
-        <section className="band screen-only" aria-labelledby="live-title">
-          <div className="band-heading">
-            <h2 id="live-title">Live map preview</h2>
-            <p>Check one first-card row before you use the full PDF.</p>
-          </div>
-          <div className="picker-scroll">
-            <div className="card-picker" aria-label="Choose the first card">
-              {CARDS.map((card) => (
-                <Button
-                  aria-label={`${card.rank} of ${card.suit}`}
-                  aria-pressed={card.index === selectedCardIndex}
-                  className={`deck-card-button card-${card.color}`}
-                  key={card.id}
-                  onClick={() => setSelectedCardIndex(card.index)}
-                  type="button"
-                  variant="ghost"
-                >
-                  {card.rank}
-                  {card.symbol}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="live-scroll">
-            <div className="live-row">
-              <div
-                className={`live-first-card card-${selectedRow.first.color}`}
-              >
-                <span>First card</span>
-                <strong>
-                  {selectedRow.first.rank}
-                  {selectedRow.first.symbol}
-                </strong>
-              </div>
-              <div className="live-grid" aria-label="Second-card words">
-                {selectedRow.entries.map((entry) => (
-                  <MappingCell entry={entry} key={entry.second.id} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="pdf-section" aria-labelledby="pdf-title">
-        <div className="band pdf-heading screen-only">
-          <div className="band-heading">
-            <h2 id="pdf-title">Printable PDF</h2>
-            <p>
-              The PDF has 14 Letter pages: one instructions page and 13 table
-              pages. Use the printed pages during card draws. The live map above
-              is only a quick check. The first table page is shown below as a
-              preview.
-            </p>
-          </div>
-          <Button
-            className="pdf-download-button"
-            disabled={!canDownloadPdf}
-            onClick={() => void downloadPdf()}
-            size="lg"
-            type="button"
-          >
-            <DownloadIcon data-icon="inline-start" />
-            {isDownloadingPdf ? "Creating PDF…" : "Download all 14 pages"}
-          </Button>
-        </div>
-        <div className="page-list" aria-busy={isGenerating}>
-          {table ? (
-            pages.map((rows, pageIndex) => (
-              <LookupPage
-                key={pageIndex}
-                pageIndex={pageIndex}
-                rows={rows}
-                shuffleCode={table.seed}
-              />
-            ))
-          ) : (
-            <p className="loading-copy screen-only">Generating the PDF…</p>
-          )}
-        </div>
-        {table ? (
-          <p className="sr-only" aria-live="polite">
-            PDF ready: 14 Letter pages.
-          </p>
-        ) : null}
       </section>
     </>
   );

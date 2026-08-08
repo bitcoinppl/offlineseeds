@@ -157,16 +157,25 @@ input {
   border-top: 1px solid var(--rule);
 }
 
-/* the masthead rule already separates the first band, and the form sits beside
-   its notes so the band rules do not overhang a single column of content */
+/* the masthead rule already separates the first band */
 .controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 2rem 3rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   margin-top: 0;
   padding-top: 1.75rem;
   border-top: 0;
+}
+
+.controls-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 40rem;
+}
+
+.controls-warning {
+  margin: 0;
 }
 
 .band-heading {
@@ -283,8 +292,7 @@ input {
   margin-top: 1.75rem;
 }
 
-.note-columns .callout,
-.controls-notes > .callout:first-child {
+.note-columns .callout {
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
@@ -769,7 +777,6 @@ p.callout {
     min-width: 0;
   }
 
-  .controls,
   .instruction-list,
   .note-columns {
     grid-template-columns: 1fr;
