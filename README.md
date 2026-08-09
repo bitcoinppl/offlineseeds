@@ -25,16 +25,15 @@ SeedSigner for word 24, and a private room without cameras or microphones.
 Prepare:
 
 1. Count all 52 distinct cards. Remove the jokers and advertising cards.
-2. Choose a clear left position for the first card of each pair. Pair order
-   matters.
-3. Test the wallet's final-word function with disposable words before the real
+2. Test the wallet's final-word function with disposable words before the real
    run. Do not discover an incompatible wallet after you draw the real words.
 
 Generate words 1–23. For each word:
 
-1. Return all 52 cards to the deck. Riffle-shuffle the full deck 12 times. Use
-   loose, uneven interleaving. Do not alternate cards in a fixed pattern.
-2. Draw the top card to the left. Draw the next card to the right.
+1. Return all 52 cards to the deck. Riffle-shuffle the full deck 12 times in
+   loose, uneven groups.
+2. Put the top card on the left and the next card on the right. Do not swap
+   them.
 3. Find the ordered pair in the table: first card in the left box, second card
    in that row.
 4. A dash is a blank pair. Restore all 52 cards, shuffle the full deck, and try

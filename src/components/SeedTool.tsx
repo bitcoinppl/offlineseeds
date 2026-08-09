@@ -304,10 +304,9 @@ export function SeedTool() {
             <span>4</span>
             <p>
               <strong>Draw one ordered pair.</strong> Return all 52 cards to the
-              deck. Riffle-shuffle the full deck 12 times. Use loose, uneven
-              interleaving. Do not alternate cards in a fixed pattern. Draw the
-              top card and put it on the left. Draw the next card and put it on
-              the right. Pair order matters.
+              deck. Riffle-shuffle the full deck 12 times in loose, uneven
+              groups. Draw the top card and put it on the left. Draw the next
+              card and put it on the right. Do not swap them.
             </p>
           </li>
           <li>

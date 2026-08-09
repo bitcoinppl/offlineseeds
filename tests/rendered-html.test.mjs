@@ -20,7 +20,7 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.match(html, /All 2,048 words can occur/);
   assert.match(html, /A blank pair is a retry/);
   assert.match(html, /Riffle-shuffle the full deck 12 times/);
-  assert.match(html, /Do not alternate cards in a fixed pattern/);
+  assert.match(html, /12 times in loose, uneven groups/);
   assert.match(html, /Do not continue through the remaining deck/);
   assert.match(html, /empty COLDCARD shows eight valid final words/);
   assert.match(html, /SeedSigner accepts three coin flips/);
@@ -30,6 +30,7 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.match(html, /verify with a second offline wallet/i);
   assert.match(html, /Never reverse a pair to avoid a blank/);
   assert.match(html, /Never redraw only one card/);
+  assert.match(html, /Do not swap them/);
   assert.match(html, /without cameras or microphones/);
   assert.match(html, /Test the wallet first/);
   assert.match(html, /The 23 words supply 253 bits/);

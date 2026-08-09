@@ -97,16 +97,14 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
     title: "Prepare",
     lines: [
       "1. Count all 52 distinct cards. Remove the jokers and advertising cards.",
-      "2. Choose a clear left position for the first card of each pair. Pair order matters.",
-      "3. Test the wallet's final-word function with disposable words before the real run.",
+      "2. Test the wallet's final-word function with disposable words before the real run.",
     ],
   },
   {
     title: "Generate words 1-23. For each word:",
     lines: [
-      "1. Return all 52 cards. Riffle-shuffle the full deck 12 times.",
-      "   Use loose, uneven interleaving. Do not alternate cards in a fixed pattern.",
-      "2. Draw the top card to the left. Draw the next card to the right.",
+      "1. Return all 52 cards. Riffle-shuffle the full deck 12 times in loose, uneven groups.",
+      "2. Put the top card on the left and the next card on the right. Do not swap them.",
       "3. Find the first card in the large box at the left edge of a table row.",
       "4. Find the second card in that row. For a dash, restore all 52 cards",
       "   and shuffle again. Continuing through the deck would favor some words.",
