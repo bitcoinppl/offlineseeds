@@ -88,7 +88,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
       "- A complete 52-card deck without jokers",
       "- This printed lookup table, pages 2-14",
       "- Pen and paper",
-      "- An offline wallet that can generate 3 random entropy bits and calculate word 24",
+      "- An empty COLDCARD or an air-gapped SeedSigner for word 24",
       "- A private room without cameras or microphones",
     ],
   },
@@ -103,11 +103,12 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
   {
     title: "Generate words 1-23. For each word:",
     lines: [
-      "1. Return all 52 cards to the deck and shuffle thoroughly.",
+      "1. Return all 52 cards. Riffle-shuffle the full deck 12 times.",
+      "   Use loose, uneven interleaving. Do not alternate cards in a fixed pattern.",
       "2. Draw the top card to the left. Draw the next card to the right.",
       "3. Find the first card in the large box at the left edge of a table row.",
-      "4. Find the second card in that row. A dash is a blank pair: return the",
-      "   cards, shuffle the full deck, and try again.",
+      "4. Find the second card in that row. For a dash, restore all 52 cards",
+      "   and shuffle again. Continuing through the deck would favor some words.",
       "5. Otherwise, record the word. Stop after 23 words.",
     ],
   },
@@ -123,12 +124,17 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
   {
     title: "Word 24",
     lines: [
-      "1. Enter the 23 words directly on the offline wallet. Do not enter them into",
-      "   a phone or a general-purpose computer.",
-      "2. Let the wallet generate the final 3 entropy bits and the 8-bit checksum for word 24.",
-      "3. Record word 24 with the first 23 words. Confirm the complete phrase on the device.",
-      "4. Destroy the temporary notes.",
-      "A wallet that sets the 3 bits deterministically adds no entropy. The phrase then has 253 bits.",
+      "1. COLDCARD: choose Import Existing > 24 Words, then enter the 23 words.",
+      "   SeedSigner: choose Tools > Calc 12th/24th word > 24 words, then enter them.",
+      "2. COLDCARD shows 8 final words. Count positions 1-8 from the top.",
+      "   SeedSigner: choose Coin Flip Entropy.",
+      "3. Restore all 52 cards, shuffle as above, and draw the top card.",
+      "4. COLDCARD: Ace selects 1, 2 selects 2, and so on through 8.",
+      "   SeedSigner: T means Tails and H means Heads. Enter A=TTT, 2=TTH,",
+      "   3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH.",
+      "5. For 9-K, return the card, shuffle the full deck, and draw again.",
+      "6. Record word 24, confirm the phrase, and destroy the temporary notes.",
+      "Optional: compare master fingerprints on a second offline wallet, then wipe it.",
     ],
   },
   {
@@ -136,7 +142,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
     lines: [
       "- Approximately 77.2% of draws give a word: 2,048 of 2,652 ordered pairs.",
       "- Expect approximately 30 attempts for 23 words. Blank pairs are normal.",
-      "- The cards supply 253 bits. The wallet supplies 3 bits. The total is 256 bits.",
+      "- The final card draw selects one of 8 equally likely choices for word 24.",
     ],
   },
 ];

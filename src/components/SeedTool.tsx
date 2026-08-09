@@ -271,7 +271,7 @@ export function SeedTool() {
           <h2 id="guide-title">Make the first 23 words</h2>
           <p>
             Use the printed PDF, a full 52-card deck, and a private room. An
-            offline wallet adds entropy and the checksum for word 24.
+            offline wallet and one final card draw complete word 24.
           </p>
         </div>
         <ol className="instruction-list">
@@ -287,9 +287,9 @@ export function SeedTool() {
             <span>2</span>
             <p>
               <strong>Test the wallet first.</strong> Use disposable test words
-              to confirm that the offline wallet can generate 3 random entropy
-              bits and calculate word 24 from 23 words. Do this before you draw
-              the real words.
+              to confirm that an empty COLDCARD shows eight valid final words,
+              or that an air-gapped SeedSigner accepts three Heads or Tails
+              entries. Do this before you draw the real words.
             </p>
           </li>
           <li>
@@ -304,8 +304,10 @@ export function SeedTool() {
             <span>4</span>
             <p>
               <strong>Draw one ordered pair.</strong> Return all 52 cards to the
-              deck and shuffle well. Draw the top card and put it on the left.
-              Draw the next card and put it on the right. Pair order matters.
+              deck. Riffle-shuffle the full deck 12 times. Use loose, uneven
+              interleaving. Do not alternate cards in a fixed pattern. Draw the
+              top card and put it on the left. Draw the next card and put it on
+              the right. Pair order matters.
             </p>
           </li>
           <li>
@@ -313,8 +315,9 @@ export function SeedTool() {
             <p>
               <strong>Read one word.</strong> Find the first card in the large
               box at the left. Find the second card in that row. If the pair has
-              a dash, return the cards, shuffle the full deck, and try again.
-              Otherwise, record the word.
+              a dash, restore all 52 cards, shuffle the full deck, and try
+              again. Do not continue through the remaining deck because that
+              would favor some words. Otherwise, record the word.
             </p>
           </li>
           <li>
@@ -449,15 +452,27 @@ export function SeedTool() {
           <div className="callout">
             <strong>Use a compatible offline wallet for word 24.</strong>
             <p>
-              Enter the 23 words directly on the offline wallet. Let the wallet
-              generate the final 3 entropy bits and calculate the 8-bit checksum
-              for word 24. Record word 24 with the first 23 words, confirm the
-              complete phrase on the device, and then destroy the temporary
-              notes. Do not pick word 24 from this table.
+              On an empty COLDCARD, choose Import Existing, then 24 Words, and
+              enter the 23 words. The device shows eight final words. Count
+              positions 1 through 8 from the top of the list.
             </p>
-            <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
-              Read the BIP39 specification
-            </a>
+            <p>
+              On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
+              then 24 words. Enter the 23 words and choose Coin Flip Entropy.
+            </p>
+            <p>
+              Restore all 52 cards, shuffle as above, and draw the top card. On
+              COLDCARD, Ace selects position 1, 2 selects position 2, and so on
+              through 8. On SeedSigner, T means Tails and H means Heads. Enter
+              A=TTT, 2=TTH, 3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH. For 9
+              through King, return the card, shuffle the full deck, and draw
+              again.
+            </p>
+            <p>
+              Record word 24, confirm the complete phrase on the device, and
+              destroy the temporary notes. Do not pick a word without the card
+              draw.
+            </p>
           </div>
           <div className="callout">
             <strong>Keep the words off computers.</strong>
@@ -465,6 +480,16 @@ export function SeedTool() {
               Do not enter the words into this site, a phone, or any
               general-purpose computer. The first electronic entry of the 23
               words is on the offline wallet itself.
+            </p>
+          </div>
+          <div className="callout">
+            <strong>Optional: verify with a second offline wallet.</strong>
+            <p>
+              Enter the complete phrase on a second compatible, air-gapped
+              wallet. Compare the master key fingerprint on both devices. Wipe
+              the verification device when you finish. Each extra device that
+              sees the phrase adds exposure, so do this check only if you need
+              it.
             </p>
           </div>
         </div>
@@ -493,10 +518,18 @@ export function SeedTool() {
             <p>
               A draw is accepted with probability 2,048 / 2,652 ≈ 77.2%. Each
               accepted word is uniform over 2,048 possibilities and supplies
-              log₂(2,048) = 11 bits. The 23 words supply 253 bits. The wallet
-              adds 3 random bits for a total of 256 bits. The 8-bit checksum
-              adds no randomness.
+              log₂(2,048) = 11 bits. The 23 words supply 253 bits. The final
+              Ace-to-8 card draw adds 3 random bits for a total of 256 bits. The
+              8-bit checksum adds no randomness.
             </p>
+            <p>
+              If you always choose the same final position, the phrase has 253
+              bits rather than 256 bits. The final card draw is required for the
+              256-bit claim.
+            </p>
+            <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
+              Read the BIP39 specification
+            </a>
           </div>
           <div className="callout">
             <strong>Expected attempts.</strong>
@@ -540,9 +573,12 @@ export function SeedTool() {
             <strong>Effect of imperfect shuffling.</strong>
             <p>
               If the most likely word is β times more likely than uniform, and
-              the wallet supplies 3 independent bits, the min-entropy is 253 −
-              23 × log₂(β) + 3 bits. No fixed number of hand shuffles proves
-              uniformity, so the physical shuffle is the principal uncertainty.
+              the final draw supplies 3 independent bits, the min-entropy is 253
+              − 23 × log₂(β) + 3 bits. In the ideal riffle model, the distance
+              from uniform is 0.334 after 7 shuffles and about 0.011 after 12.
+              Real hand shuffles can differ from that model, and no fixed count
+              proves uniformity. The physical shuffle is the principal
+              uncertainty.
             </p>
             <table className="data-table">
               <thead>
@@ -578,6 +614,9 @@ export function SeedTool() {
                 </tr>
               </tbody>
             </table>
+            <a href="https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf">
+              Read the riffle-shuffle analysis
+            </a>
           </div>
         </div>
         <p className="callout">

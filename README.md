@@ -19,8 +19,8 @@ with available bytes from RANDOM.ORG and the drand public randomness beacon.
 ## Generate a phrase with the printed table
 
 Materials: a complete 52-card deck without jokers, the printed table, pen and
-paper, an offline wallet that can generate 3 random entropy bits and calculate
-word 24, and a private room without cameras or microphones.
+paper, an empty COLDCARD or an air-gapped SeedSigner for word 24, and a private
+room without cameras or microphones.
 
 Prepare:
 
@@ -32,12 +32,14 @@ Prepare:
 
 Generate words 1–23. For each word:
 
-1. Return all 52 cards to the deck and shuffle thoroughly.
+1. Return all 52 cards to the deck. Riffle-shuffle the full deck 12 times. Use
+   loose, uneven interleaving. Do not alternate cards in a fixed pattern.
 2. Draw the top card to the left. Draw the next card to the right.
 3. Find the ordered pair in the table: first card in the left box, second card
    in that row.
-4. A dash is a blank pair. Return the cards, shuffle the full deck, and try
-   again.
+4. A dash is a blank pair. Restore all 52 cards, shuffle the full deck, and try
+   again. Do not continue through the remaining deck because that would favor
+   some words.
 5. Otherwise, record the word. Stop after 23 words.
 
 Rules:
@@ -50,14 +52,21 @@ Rules:
 
 Word 24:
 
-1. Enter the 23 words directly on the offline wallet. Do not enter them into a
-   phone or a general-purpose computer. The first electronic entry of the words
-   is on the wallet itself.
-2. Let the wallet generate the final 3 entropy bits and the 8-bit checksum for
-   word 24.
-3. Record word 24 with the first 23 words. Confirm the complete phrase on the
-   device.
-4. Destroy the temporary card-pair and word notes.
+1. On an empty COLDCARD, choose **Import Existing**, then **24 Words**, and
+   enter the 23 words. Count the eight final words from the top of the list.
+2. On an air-gapped SeedSigner, choose **Tools**, **Calc 12th/24th word**, then
+   **24 words**. Enter the 23 words and choose **Coin Flip Entropy**.
+3. Restore all 52 cards, shuffle as above, and draw the top card.
+4. On COLDCARD, Ace selects position 1, 2 selects position 2, and so on through 8. On SeedSigner, T means Tails and H means Heads. Enter A=TTT, 2=TTH,
+   3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH.
+5. For 9 through King, return the card, shuffle the full deck, and draw again.
+6. Record word 24 with the first 23 words. Confirm the complete phrase on the
+   device, then destroy the temporary card-pair and word notes.
+
+Optional verification: enter the complete phrase on a second compatible,
+air-gapped wallet. Compare the master key fingerprint on both devices. Wipe the
+verification device when you finish. Each extra device that sees the phrase
+adds exposure, so do this check only if you need it.
 
 ## Entropy checks
 
@@ -86,14 +95,13 @@ pairs are blank. Each accepted pair maps to exactly one BIP39 word.
 
 With an ideal shuffle, a draw is accepted with probability 2,048 / 2,652 ≈
 77.2%. Each accepted word is then uniform over 2,048 possibilities and
-supplies log₂(2,048) = 11 bits. The first 23 words supply 253 bits. A
-compatible offline wallet must generate the last 3 entropy bits and the 8-bit
-checksum for word 24, for a total of 256 bits. The checksum detects
+supplies log₂(2,048) = 11 bits. The first 23 words supply 253 bits. The final
+Ace-to-8 card draw adds the last 3 entropy bits, for a total of 256 bits. The
+wallet calculates the 8-bit checksum for word 24. The checksum detects
 transcription errors and adds no randomness.
 
-A wallet that sets the 3 bits deterministically adds no entropy, and the
-phrase keeps 253 bits. Confirm the random generation in the wallet
-documentation.
+If you always choose the same final position, the phrase has 253 bits rather
+than 256 bits. The final card draw is required for the 256-bit claim.
 
 ### Expected attempts
 
@@ -111,14 +119,15 @@ blanks. A run with no blank at all has only a 0.26% probability.
 ### Effect of imperfect shuffling
 
 The 256-bit result requires uniform, independent shuffles and 3 independent
-wallet bits. If the most likely word is β times more likely than uniform, and
-the wallet supplies `h_wallet` bits of min-entropy, the phrase min-entropy is:
+bits from the final card draw. If the most likely word is β times more likely
+than uniform, and the final draw supplies `h_final` bits of min-entropy, the
+phrase min-entropy is:
 
 ```text
-253 − 23 × log₂(β) + h_wallet
+253 − 23 × log₂(β) + h_final
 ```
 
-With `h_wallet = 3`:
+With `h_final = 3`:
 
 | Maximum word bias | Min-entropy |
 | ----------------: | ----------: |
@@ -129,9 +138,12 @@ With `h_wallet = 3`:
 |                4× |  210.0 bits |
 |                8× |  187.0 bits |
 
-Dependence between successive shuffles can reduce the entropy further. No
-fixed number of hand shuffles proves uniformity, so the physical shuffle is
-the principal uncertainty in the method.
+Dependence between successive shuffles can reduce the entropy further. In the
+ideal riffle model, the total variation distance from uniform is 0.334 after 7
+shuffles and approximately 0.011 after 12. Real hand shuffles can differ from
+that model, and no fixed count proves uniformity. The physical shuffle is the
+principal uncertainty in the method. See the
+[Bayer and Diaconis analysis](https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf).
 
 ## Develop
 
