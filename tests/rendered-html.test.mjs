@@ -23,8 +23,9 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.match(html, /Do not alternate cards in a fixed pattern/);
   assert.match(html, /Do not continue through the remaining deck/);
   assert.match(html, /empty COLDCARD shows eight valid final words/);
-  assert.match(html, /SeedSigner accepts three Heads or Tails entries/);
-  assert.match(html, /A=TTT, 2=TTH/);
+  assert.match(html, /SeedSigner accepts three coin flips/);
+  assert.match(html, /Flip a fair coin three times/);
+  assert.doesNotMatch(html, /A=TTT|2=TTH|3=THT/);
   assert.match(html, /phrase has 253 bits rather than 256 bits/);
   assert.match(html, /verify with a second offline wallet/i);
   assert.match(html, /Never reverse a pair to avoid a blank/);

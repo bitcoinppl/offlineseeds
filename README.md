@@ -19,8 +19,8 @@ with available bytes from RANDOM.ORG and the drand public randomness beacon.
 ## Generate a phrase with the printed table
 
 Materials: a complete 52-card deck without jokers, the printed table, pen and
-paper, an empty COLDCARD or an air-gapped SeedSigner for word 24, and a private
-room without cameras or microphones.
+paper, a fair coin if you use SeedSigner, an empty COLDCARD or an air-gapped
+SeedSigner for word 24, and a private room without cameras or microphones.
 
 Prepare:
 
@@ -50,18 +50,24 @@ Rules:
   looks unusual.
 - Keep accepted and rejected draws private.
 
-Word 24:
+Word 24 with COLDCARD:
 
 1. On an empty COLDCARD, choose **Import Existing**, then **24 Words**, and
    enter the 23 words. Count the eight final words from the top of the list.
-2. On an air-gapped SeedSigner, choose **Tools**, **Calc 12th/24th word**, then
-   **24 words**. Enter the 23 words and choose **Coin Flip Entropy**.
-3. Restore all 52 cards, shuffle as above, and draw the top card.
-4. On COLDCARD, Ace selects position 1, 2 selects position 2, and so on through 8. On SeedSigner, T means Tails and H means Heads. Enter A=TTT, 2=TTH,
-   3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH.
-5. For 9 through King, return the card, shuffle the full deck, and draw again.
-6. Record word 24 with the first 23 words. Confirm the complete phrase on the
+2. Restore all 52 cards, shuffle as above, and draw the top card.
+3. Ace selects the first word, 2 selects the second word, and so on through 8.
+4. For 9 through King, return the card, shuffle the full deck, and draw again.
+5. Record word 24 with the first 23 words. Confirm the complete phrase on the
    device, then destroy the temporary card-pair and word notes.
+
+Word 24 with SeedSigner:
+
+1. On an air-gapped SeedSigner, choose **Tools**, **Calc 12th/24th word**, then
+   **24 words**.
+2. Enter the 23 words and choose **Coin Flip Entropy**.
+3. Flip a fair coin three times and enter each Heads or Tails result.
+4. Record the displayed word 24, confirm the complete phrase, and destroy the
+   temporary notes.
 
 Optional verification: enter the complete phrase on a second compatible,
 air-gapped wallet. Compare the master key fingerprint on both devices. Wipe the

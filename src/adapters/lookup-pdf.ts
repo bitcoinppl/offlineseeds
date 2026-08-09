@@ -88,6 +88,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
       "- A complete 52-card deck without jokers",
       "- This printed lookup table, pages 2-14",
       "- Pen and paper",
+      "- A fair coin if you use SeedSigner for word 24",
       "- An empty COLDCARD or an air-gapped SeedSigner for word 24",
       "- A private room without cameras or microphones",
     ],
@@ -122,19 +123,23 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
     ],
   },
   {
-    title: "Word 24",
+    title: "Word 24 with COLDCARD",
     lines: [
       "1. COLDCARD: choose Import Existing > 24 Words, then enter the 23 words.",
-      "   SeedSigner: choose Tools > Calc 12th/24th word > 24 words, then enter them.",
-      "2. COLDCARD shows 8 final words. Count positions 1-8 from the top.",
-      "   SeedSigner: choose Coin Flip Entropy.",
+      "2. The device shows 8 final words. Count positions 1-8 from the top.",
       "3. Restore all 52 cards, shuffle as above, and draw the top card.",
-      "4. COLDCARD: Ace selects 1, 2 selects 2, and so on through 8.",
-      "   SeedSigner: T means Tails and H means Heads. Enter A=TTT, 2=TTH,",
-      "   3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH.",
+      "4. Ace selects 1, 2 selects 2, and so on through 8.",
       "5. For 9-K, return the card, shuffle the full deck, and draw again.",
-      "6. Record word 24, confirm the phrase, and destroy the temporary notes.",
-      "Optional: compare master fingerprints on a second offline wallet, then wipe it.",
+    ],
+  },
+  {
+    title: "Word 24 with SeedSigner",
+    lines: [
+      "1. Choose Tools > Calc 12th/24th word > 24 words.",
+      "2. Enter the 23 words, then choose Coin Flip Entropy.",
+      "3. Flip a fair coin 3 times. Enter each Heads or Tails result.",
+      "4. Record the displayed word 24 and confirm the complete phrase.",
+      "Destroy the temporary notes after either method.",
     ],
   },
   {
@@ -142,7 +147,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
     lines: [
       "- Approximately 77.2% of draws give a word: 2,048 of 2,652 ordered pairs.",
       "- Expect approximately 30 attempts for 23 words. Blank pairs are normal.",
-      "- The final card draw selects one of 8 equally likely choices for word 24.",
+      "- COLDCARD uses one final card; SeedSigner uses 3 final coin flips.",
     ],
   },
 ];

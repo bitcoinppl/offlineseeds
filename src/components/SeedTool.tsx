@@ -288,8 +288,8 @@ export function SeedTool() {
             <p>
               <strong>Test the wallet first.</strong> Use disposable test words
               to confirm that an empty COLDCARD shows eight valid final words,
-              or that an air-gapped SeedSigner accepts three Heads or Tails
-              entries. Do this before you draw the real words.
+              or that an air-gapped SeedSigner accepts three coin flips. Do this
+              before you draw the real words.
             </p>
           </li>
           <li>
@@ -450,28 +450,34 @@ export function SeedTool() {
             </p>
           </div>
           <div className="callout">
-            <strong>Use a compatible offline wallet for word 24.</strong>
+            <strong>Finish with COLDCARD.</strong>
             <p>
               On an empty COLDCARD, choose Import Existing, then 24 Words, and
               enter the 23 words. The device shows eight final words. Count
               positions 1 through 8 from the top of the list.
             </p>
             <p>
-              On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
-              then 24 words. Enter the 23 words and choose Coin Flip Entropy.
-            </p>
-            <p>
-              Restore all 52 cards, shuffle as above, and draw the top card. On
-              COLDCARD, Ace selects position 1, 2 selects position 2, and so on
-              through 8. On SeedSigner, T means Tails and H means Heads. Enter
-              A=TTT, 2=TTH, 3=THT, 4=THH, 5=HTT, 6=HTH, 7=HHT, or 8=HHH. For 9
-              through King, return the card, shuffle the full deck, and draw
-              again.
+              Restore all 52 cards, shuffle as above, and draw the top card. Ace
+              selects the first word, 2 selects the second word, and so on
+              through 8. For 9 through King, return the card, shuffle the full
+              deck, and draw again.
             </p>
             <p>
               Record word 24, confirm the complete phrase on the device, and
               destroy the temporary notes. Do not pick a word without the card
               draw.
+            </p>
+          </div>
+          <div className="callout">
+            <strong>Finish with SeedSigner.</strong>
+            <p>
+              On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
+              then 24 words. Enter the 23 words and choose Coin Flip Entropy.
+            </p>
+            <p>
+              Flip a fair coin three times and enter each Heads or Tails result.
+              SeedSigner displays word 24. Record it, confirm the complete
+              phrase, and destroy the temporary notes.
             </p>
           </div>
           <div className="callout">
