@@ -31,7 +31,7 @@ Prepare:
 
 Generate words 1–23. For each word:
 
-1. Return all 52 cards to the deck. Riffle-shuffle the full deck 12 times in
+1. Return all 52 cards to the deck. Riffle-shuffle the full deck 8 times in
    loose, uneven groups.
 2. Put the top card on the left and the next card on the right. Do not swap
    them.
@@ -146,9 +146,10 @@ With `h_final = 3`:
 
 Dependence between successive shuffles can reduce the entropy further. In the
 ideal riffle model, the total variation distance from uniform is 0.334 after 7
-shuffles and approximately 0.011 after 12. Real hand shuffles can differ from
-that model, and no fixed count proves uniformity. The physical shuffle is the
-principal uncertainty in the method. See the
+shuffles and 0.167 after 8. This method only needs the top two cards, which mix
+faster than the full deck. Real hand shuffles can differ from that model, and
+no fixed count proves uniformity. The physical shuffle is the principal
+uncertainty in the method. See the
 [Bayer and Diaconis analysis](https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf).
 
 ## Develop

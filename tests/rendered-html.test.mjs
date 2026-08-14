@@ -19,8 +19,8 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.doesNotMatch(html, /Select “Save as PDF” in the print window/);
   assert.match(html, /All 2,048 words can occur/);
   assert.match(html, /A blank pair is a retry/);
-  assert.match(html, /Riffle-shuffle the full deck 12 times/);
-  assert.match(html, /12 times in loose, uneven groups/);
+  assert.match(html, /Riffle-shuffle the full deck 8 times/);
+  assert.match(html, /8 times in loose, uneven groups/);
   assert.match(html, /Do not continue through the remaining deck/);
   assert.match(html, /If you have never finished word 24 on this device/);
   assert.match(html, /dry run with disposable words/);

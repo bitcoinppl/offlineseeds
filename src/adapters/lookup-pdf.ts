@@ -103,7 +103,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
   {
     title: "Generate words 1-23. For each word:",
     lines: [
-      "1. Return all 52 cards. Riffle-shuffle the full deck 12 times in loose, uneven groups.",
+      "1. Return all 52 cards. Riffle-shuffle the full deck 8 times in loose, uneven groups.",
       "2. Put the top card on the left and the next card on the right. Do not swap them.",
       "3. Find the first card in the large box at the left edge of a table row.",
       "4. Find the second card in that row. For a dash, restore all 52 cards",

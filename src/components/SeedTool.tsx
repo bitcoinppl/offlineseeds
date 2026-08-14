@@ -385,7 +385,7 @@ export function SeedTool() {
             </span>
             <p>
               <strong>Draw one ordered pair.</strong> Return all 52 cards to the
-              deck. Riffle-shuffle the full deck 12 times in loose, uneven
+              deck. Riffle-shuffle the full deck 8 times in loose, uneven
               groups. Draw the top card and put it on the left. Draw the next
               card and put it on the right. Do not swap them.
             </p>
@@ -644,9 +644,11 @@ export function SeedTool() {
             If the most likely word is β times more likely than uniform, and the
             final draw supplies 3 independent bits, the min-entropy is 253 − 23
             × log₂(β) + 3 bits. In the ideal riffle model, the distance from
-            uniform is 0.334 after 7 shuffles and about 0.011 after 12. Real
-            hand shuffles can differ from that model, and no fixed count proves
-            uniformity. The physical shuffle is the principal uncertainty.
+            uniform is 0.334 after 7 shuffles and 0.167 after 8. This method
+            only needs the top two cards, which mix faster than the full deck.
+            Real hand shuffles can differ from that model, and no fixed count
+            proves uniformity. The physical shuffle is the principal
+            uncertainty.
           </p>
           <table className={dataTableClassName}>
             <thead>
