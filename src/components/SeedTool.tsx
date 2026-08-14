@@ -1,4 +1,6 @@
 import {
+  type ComponentProps,
+  type ReactNode,
   type SyntheticEvent,
   useCallback,
   useEffect,
@@ -9,10 +11,12 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { DownloadIcon, ShuffleIcon } from "lucide-react";
 import { type EntropySource, mixRandomSeed } from "../adapters/random-seed";
 import {
   CARDS,
+  type Card,
   type LookupEntry,
   type LookupRow,
   type LookupTable,
@@ -38,6 +42,27 @@ type Notice = Readonly<{
 }>;
 
 const REGENERATE_DELAY_MS = 400;
+
+const suitTone: Record<Card["color"], string> = {
+  red: "text-suit-red hover:text-suit-red aria-pressed:text-suit-red-on-ink aria-pressed:hover:text-suit-red-on-ink",
+  black: "text-ink-1",
+};
+
+const deckCardClassName =
+  "h-[3.4rem] min-w-0 rounded-[0.35rem] border border-rule-strong bg-paper-0 p-0 font-display text-[1.05rem] font-bold shadow-card transition-[transform,box-shadow] duration-[130ms] ease-[ease] hover:-translate-y-0.5 hover:bg-paper-0 hover:shadow-lift aria-pressed:z-[1] aria-pressed:-translate-y-0.5 aria-pressed:border-ink-1 aria-pressed:bg-ink-1 aria-pressed:text-paper-0 aria-pressed:shadow-lift aria-pressed:hover:-translate-y-0.5 aria-pressed:hover:bg-ink-1 aria-pressed:hover:shadow-lift motion-reduce:transform-none motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:aria-pressed:transform-none motion-reduce:aria-pressed:hover:transform-none";
+
+const noteClassName =
+  "mt-5 border-t border-rule pt-[0.9rem] text-note leading-[1.55] text-ink-2 [&_strong]:block [&_strong]:text-sm [&_strong]:font-semibold [&_strong]:text-ink-1 [&_p]:m-0 [&_strong+p]:mt-[0.3rem] [&_a]:mt-2 [&_a]:inline-block [&_a]:font-medium [&_a]:text-note [&_a]:text-ink-1 [&_a]:underline [&_a]:decoration-rule-strong [&_a]:underline-offset-[3px] [&_a]:transition-[text-decoration-color] [&_a]:duration-150 [&_a]:ease-[ease] [&_a:hover]:decoration-current [&_a:focus-visible]:decoration-current";
+
+const dataTableClassName =
+  "mt-3 border-collapse text-note text-ink-2 [font-variant-numeric:lining-nums_tabular-nums]";
+
+const dataCellClassName = "border-b border-rule py-1 pr-6 text-left";
+
+const dataHeaderClassName = cn(
+  dataCellClassName,
+  "text-label font-semibold uppercase tracking-[0.08em] text-ink-3",
+);
 
 export function SeedTool() {
   const [shuffleInput, setShuffleInput] = useState("");
@@ -186,25 +211,34 @@ export function SeedTool() {
 
   return (
     <>
-      <section className="band controls screen-only" aria-label="PDF controls">
-        <div className="controls-main">
-          <form className="control-form" onSubmit={submitShuffleCode}>
-            <div className="field">
-              <label className="field-label" htmlFor="shuffle-code">
+      <Band
+        className="mt-0 flex flex-col gap-5 border-t-0 pt-7 print:hidden"
+        aria-label="PDF controls"
+      >
+        <div className="grid grid-cols-1 items-start gap-x-12 gap-y-5 md:grid-cols-2">
+          <form
+            className="col-start-1 flex flex-col gap-5"
+            onSubmit={submitShuffleCode}
+          >
+            <div className="flex flex-col gap-2">
+              <label
+                className="w-fit text-xs font-semibold uppercase tracking-[0.08em] text-ink-3"
+                htmlFor="shuffle-code"
+              >
                 Shuffle code
               </label>
               <Input
                 aria-describedby="shuffle-code-help"
                 autoComplete="off"
                 id="shuffle-code"
-                className="shuffle-input"
+                className="h-[2.6rem] bg-paper-0 font-mono text-note shadow-[inset_0_1px_2px_rgb(60_45_30/0.06)] md:text-note"
                 maxLength={MAX_SEED_LENGTH}
                 name="shuffle-code"
                 onChange={(event) => editShuffleCode(event.target.value)}
                 spellCheck={false}
                 value={shuffleInput}
               />
-              <p className="field-description" id="shuffle-code-help">
+              <p className="m-0 text-note text-ink-3" id="shuffle-code-help">
                 {isGenerating
                   ? "Rebuilding the PDF…"
                   : "Reuse a code to make the same PDF."}
@@ -212,18 +246,19 @@ export function SeedTool() {
               {notice ? (
                 <p
                   role="alert"
-                  className={`field-error ${
-                    notice.kind === "warning" ? "warning-text" : ""
-                  }`}
+                  className={cn(
+                    "m-0 text-note font-medium text-suit-red",
+                    notice.kind === "warning" && "text-ink-2",
+                  )}
                 >
                   {notice.message}
                 </p>
               ) : null}
             </div>
 
-            <div className="action-row">
+            <div className="flex flex-col flex-wrap gap-2 md:flex-row">
               <Button
-                className="action-button"
+                className="h-[2.6rem] min-w-0 md:min-w-[13rem]"
                 disabled={isBusy}
                 onClick={() => void requestRandomCode()}
                 size="lg"
@@ -234,7 +269,7 @@ export function SeedTool() {
                 {isRequestingRandom ? "Getting a code…" : "New shuffle code"}
               </Button>
               <Button
-                className="action-button"
+                className="h-[2.6rem] min-w-0 md:min-w-[13rem]"
                 disabled={!canDownloadPdf}
                 onClick={() => void downloadPdf()}
                 size="lg"
@@ -247,13 +282,18 @@ export function SeedTool() {
           </form>
 
           {randomSources.length > 0 ? (
-            <p className="source-list" aria-live="polite">
-              <span className="source-label">Random sources</span>
+            <p
+              className="col-start-1 mt-5 mb-0 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-2"
+              aria-live="polite"
+            >
+              <span className="font-semibold uppercase tracking-[0.08em] text-ink-3">
+                Random sources
+              </span>
               <span>{randomSources.map(({ label }) => label).join(" · ")}</span>
             </p>
           ) : null}
 
-          <div className="callout controls-warning">
+          <Note className="col-start-1 row-auto m-0 border-t border-rule pt-[0.9rem] md:col-start-2 md:row-start-1 md:border-t-0 md:pt-0">
             <strong>
               Do not enter a wallet recovery phrase as a shuffle code.
             </strong>
@@ -262,29 +302,30 @@ export function SeedTool() {
               appears in the page URL. Your phrase comes from the shuffled deck,
               not from this code.
             </p>
-          </div>
+          </Note>
         </div>
-      </section>
+      </Band>
 
-      <section className="band screen-only" aria-labelledby="guide-title">
-        <div className="band-heading">
-          <h2 id="guide-title">Make the first 23 words</h2>
-          <p>
-            Use the printed PDF, a full 52-card deck, and a private room. An
-            offline wallet and one final card draw complete word 24.
-          </p>
-        </div>
-        <ol className="instruction-list">
-          <li>
-            <span>1</span>
+      <Band className="print:hidden" aria-labelledby="guide-title">
+        <BandHeading titleId="guide-title" title="Make the first 23 words">
+          Use the printed PDF, a full 52-card deck, and a private room. An
+          offline wallet and one final card draw complete word 24.
+        </BandHeading>
+        <ol className="m-0 grid list-none grid-cols-1 gap-x-12 gap-y-[1.35rem] p-0 md:grid-cols-2 [&_p]:m-0 [&_p]:text-sm/[1.55] [&_p]:text-ink-2 [&_strong]:font-semibold [&_strong]:text-ink-1">
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              1
+            </span>
             <p>
               <strong>Prepare the deck.</strong> Count all 52 distinct cards.
               Remove the jokers and advertising cards. Work in a private room
               without cameras or microphones.
             </p>
           </li>
-          <li>
-            <span>2</span>
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              2
+            </span>
             <p>
               <strong>First-time dry run.</strong> If you have never finished
               word 24 on this device, do one dry run with disposable words
@@ -292,16 +333,20 @@ export function SeedTool() {
               words.
             </p>
           </li>
-          <li>
-            <span>3</span>
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              3
+            </span>
             <p>
               <strong>Download the PDF.</strong> Keep all 14 pages together.
               Print on Letter paper at 100% scale. Page 1 repeats these
               instructions for offline use.
             </p>
           </li>
-          <li>
-            <span>4</span>
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              4
+            </span>
             <p>
               <strong>Draw one ordered pair.</strong> Return all 52 cards to the
               deck. Riffle-shuffle the full deck 12 times in loose, uneven
@@ -309,8 +354,10 @@ export function SeedTool() {
               card and put it on the right. Do not swap them.
             </p>
           </li>
-          <li>
-            <span>5</span>
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              5
+            </span>
             <p>
               <strong>Read one word.</strong> Find the first card in the large
               box at the left. Find the second card in that row. If the pair has
@@ -319,8 +366,10 @@ export function SeedTool() {
               would favor some words. Otherwise, record the word.
             </p>
           </li>
-          <li>
-            <span>6</span>
+          <li className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-[0.85rem]">
+            <span className="font-display text-xl font-normal leading-none text-suit-red [font-variant-numeric:lining-nums]">
+              6
+            </span>
             <p>
               <strong>Repeat until you have 23 words.</strong> Shuffle the full
               deck before each attempt. Expect approximately 30 attempts. Blank
@@ -328,21 +377,23 @@ export function SeedTool() {
             </p>
           </li>
         </ol>
-      </section>
+      </Band>
 
       {selectedRow ? (
-        <section className="band screen-only" aria-labelledby="live-title">
-          <div className="band-heading">
-            <h2 id="live-title">Live map preview</h2>
-            <p>Check one first-card row before you use the full PDF.</p>
-          </div>
-          <div className="picker-scroll">
-            <div className="card-picker" aria-label="Choose the first card">
+        <Band className="print:hidden" aria-labelledby="live-title">
+          <BandHeading titleId="live-title" title="Live map preview">
+            Check one first-card row before you use the full PDF.
+          </BandHeading>
+          <div className="overflow-x-auto">
+            <div
+              className="grid min-w-[36rem] grid-cols-[repeat(13,minmax(0,1fr))] gap-[0.3rem] md:min-w-0"
+              aria-label="Choose the first card"
+            >
               {CARDS.map((card) => (
                 <Button
                   aria-label={`${card.rank} of ${card.suit}`}
                   aria-pressed={card.index === selectedCardIndex}
-                  className={`deck-card-button card-${card.color}`}
+                  className={cn(deckCardClassName, suitTone[card.color])}
                   key={card.id}
                   onClick={() => setSelectedCardIndex(card.index)}
                   type="button"
@@ -354,40 +405,56 @@ export function SeedTool() {
               ))}
             </div>
           </div>
-          <div className="live-scroll">
-            <div className="live-row">
+          <div className="mt-4 overflow-x-auto">
+            <div className="grid min-w-[52rem] grid-cols-[5.75rem_minmax(0,1fr)] gap-3">
               <div
-                className={`live-first-card card-${selectedRow.first.color}`}
+                className={cn(
+                  "flex flex-col items-center justify-center rounded-[0.4rem] border border-rule-strong bg-paper-0 shadow-card",
+                  suitTone[selectedRow.first.color],
+                )}
               >
-                <span>First card</span>
-                <strong>
+                <span className="font-sans text-label font-semibold uppercase tracking-[0.08em] text-ink-3">
+                  First card
+                </span>
+                <strong className="mt-[0.35rem] font-display text-[2rem] font-bold leading-none">
                   {selectedRow.first.rank}
                   {selectedRow.first.symbol}
                 </strong>
               </div>
-              <div className="live-grid" aria-label="Second-card words">
+              <div
+                className="grid grid-cols-[repeat(13,minmax(0,1fr))] grid-rows-[repeat(4,minmax(3rem,1fr))] overflow-hidden rounded-[0.4rem] border border-rule-strong shadow-card [&_.mapped-word]:text-label [&_.mapping-cell]:px-[0.4rem] [&_.mapping-cell]:py-[0.35rem] [&_.second-card]:text-label"
+                aria-label="Second-card words"
+              >
                 {selectedRow.entries.map((entry) => (
                   <MappingCell entry={entry} key={entry.second.id} />
                 ))}
               </div>
             </div>
           </div>
-        </section>
+        </Band>
       ) : null}
 
-      <section className="pdf-section" aria-labelledby="pdf-title">
-        <div className="band pdf-heading screen-only">
-          <div className="band-heading">
-            <h2 id="pdf-title">Printable PDF</h2>
-            <p>
-              The PDF has 14 Letter pages: one instructions page and 13 table
-              pages. Use the printed pages during card draws. The live map above
-              is only a quick check. The first table page is shown below as a
-              preview.
-            </p>
-          </div>
+      <section
+        className="print:m-0 print:block print:w-auto print:overflow-visible print:p-0"
+        aria-labelledby="pdf-title"
+      >
+        <div
+          className={cn(
+            "mt-8 flex flex-col items-stretch gap-x-8 gap-y-4 border-t border-rule pt-8 print:hidden md:flex-row md:items-start md:justify-between",
+          )}
+        >
+          <BandHeading
+            className="mb-0"
+            titleId="pdf-title"
+            title="Printable PDF"
+          >
+            The PDF has 14 Letter pages: one instructions page and 13 table
+            pages. Use the printed pages during card draws. The live map above
+            is only a quick check. The first table page is shown below as a
+            preview.
+          </BandHeading>
           <Button
-            className="pdf-download-button"
+            className="h-[3.25rem] w-full shrink-0 px-6 text-base md:w-auto md:min-w-[15rem]"
             disabled={!canDownloadPdf}
             onClick={() => void downloadPdf()}
             size="lg"
@@ -397,7 +464,10 @@ export function SeedTool() {
             {isDownloadingPdf ? "Creating PDF…" : "Download all 14 pages"}
           </Button>
         </div>
-        <div className="page-list" aria-busy={isGenerating}>
+        <div
+          className="page-list mt-6 flex min-h-[calc(9.45in+4rem)] flex-col items-start gap-7 overflow-x-auto border-y border-rule bg-paper-2 p-4 print:m-0 print:block print:w-auto print:gap-0 print:overflow-visible print:border-0 print:bg-white print:p-0 md:items-center md:p-8"
+          aria-busy={isGenerating}
+        >
           {table ? (
             pages.map((rows, pageIndex) => (
               <LookupPage
@@ -408,7 +478,9 @@ export function SeedTool() {
               />
             ))
           ) : (
-            <p className="loading-copy screen-only">Generating the PDF…</p>
+            <p className="m-0 self-start text-sm text-ink-3 print:hidden">
+              Generating the PDF…
+            </p>
           )}
         </div>
         {table ? (
@@ -418,18 +490,15 @@ export function SeedTool() {
         ) : null}
       </section>
 
-      <section className="band screen-only" aria-labelledby="notes-title">
-        <div className="band-heading">
-          <h2 id="notes-title">Draw rules and word 24</h2>
-          <p>
-            Follow these rules during draws. Finish the phrase only on a
-            compatible offline wallet.
-          </p>
-        </div>
-        <div className="note-columns">
-          <div className="callout">
+      <Band className="print:hidden" aria-labelledby="notes-title">
+        <BandHeading titleId="notes-title" title="Draw rules and word 24">
+          Follow these rules during draws. Finish the phrase only on a
+          compatible offline wallet.
+        </BandHeading>
+        <div className="mt-7 grid grid-cols-1 gap-x-12 gap-y-[1.35rem] md:grid-cols-2">
+          <Note className="mt-0">
             <strong>Follow the draw rules exactly.</strong>
-            <ul className="rule-list">
+            <ul className="mt-[0.3rem] mb-0 list-none pl-[1.1rem] text-note leading-[1.55] text-ink-2 marker:text-ink-3 [&_li+li]:mt-1">
               <li>Accept every nonblank entry, including same-suit pairs.</li>
               <li>Never reverse a pair to avoid a blank.</li>
               <li>Never redraw only one card.</li>
@@ -439,16 +508,16 @@ export function SeedTool() {
               </li>
               <li>Keep accepted and rejected draws private.</li>
             </ul>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>All 2,048 words can occur.</strong>
             <p>
               Each word has one accepted card pair. A blank pair is a retry.
               This keeps all accepted words equally likely when the deck is well
               shuffled before each word.
             </p>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Finish with COLDCARD.</strong>
             <p>
               On an empty COLDCARD, choose Import Existing, then 24 Words, and
@@ -466,8 +535,8 @@ export function SeedTool() {
               destroy the temporary notes. Do not pick a word without the card
               draw.
             </p>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Finish with SeedSigner.</strong>
             <p>
               On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
@@ -478,16 +547,16 @@ export function SeedTool() {
               SeedSigner displays word 24. Record it, confirm the complete
               phrase, and destroy the temporary notes.
             </p>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Keep the words off computers.</strong>
             <p>
               Do not enter the words into this site, a phone, or any
               general-purpose computer. The first electronic entry of the 23
               words is on the offline wallet itself.
             </p>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Optional: verify with a second offline wallet.</strong>
             <p>
               Enter the complete phrase on a second compatible, air-gapped
@@ -496,20 +565,17 @@ export function SeedTool() {
               sees the phrase adds exposure, so do this check only if you need
               it.
             </p>
-          </div>
+          </Note>
         </div>
-      </section>
+      </Band>
 
-      <section className="band screen-only" aria-labelledby="entropy-title">
-        <div className="band-heading">
-          <h2 id="entropy-title">Entropy analysis</h2>
-          <p>
-            An ideal shuffle makes each ordered pair equally likely. The numbers
-            below are exact under that assumption.
-          </p>
-        </div>
-        <div className="note-columns">
-          <div className="callout">
+      <Band className="print:hidden" aria-labelledby="entropy-title">
+        <BandHeading titleId="entropy-title" title="Entropy analysis">
+          An ideal shuffle makes each ordered pair equally likely. The numbers
+          below are exact under that assumption.
+        </BandHeading>
+        <div className="mt-7 grid grid-cols-1 gap-x-12 gap-y-[1.35rem] md:grid-cols-2">
+          <Note className="mt-0">
             <strong>Pair space.</strong>
             <p>
               Two ordered cards give 52 × 51 = 2,652 possible pairs. The table
@@ -517,8 +583,8 @@ export function SeedTool() {
               same suit. The other 604 pairs are blank. Each accepted pair maps
               to exactly one BIP39 word.
             </p>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Bits per word.</strong>
             <p>
               A draw is accepted with probability 2,048 / 2,652 ≈ 77.2%. Each
@@ -535,46 +601,52 @@ export function SeedTool() {
             <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
               Read the BIP39 specification
             </a>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Expected attempts.</strong>
             <p>
               23 accepted words take approximately 29.8 attempts with
               approximately 6.8 blanks. A run with no blank at all has only a
               0.26% probability.
             </p>
-            <table className="data-table">
+            <table className={dataTableClassName}>
               <thead>
                 <tr>
-                  <th scope="col">Attempts</th>
-                  <th scope="col">Probability of 23 words</th>
+                  <th className={dataHeaderClassName} scope="col">
+                    Attempts
+                  </th>
+                  <th className={dataHeaderClassName} scope="col">
+                    Probability of 23 words
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>30</td>
-                  <td>62.8%</td>
+                  <td className={dataCellClassName}>30</td>
+                  <td className={dataCellClassName}>62.8%</td>
                 </tr>
                 <tr>
-                  <td>34</td>
-                  <td>93.3%</td>
+                  <td className={dataCellClassName}>34</td>
+                  <td className={dataCellClassName}>93.3%</td>
                 </tr>
                 <tr>
-                  <td>35</td>
-                  <td>96.1%</td>
+                  <td className={dataCellClassName}>35</td>
+                  <td className={dataCellClassName}>96.1%</td>
                 </tr>
                 <tr>
-                  <td>38</td>
-                  <td>99.4%</td>
+                  <td className={dataCellClassName}>38</td>
+                  <td className={dataCellClassName}>99.4%</td>
                 </tr>
                 <tr>
-                  <td>41</td>
-                  <td>99.93%</td>
+                  <td className={cn(dataCellClassName, "border-b-0")}>41</td>
+                  <td className={cn(dataCellClassName, "border-b-0")}>
+                    99.93%
+                  </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div className="callout">
+          </Note>
+          <Note className="mt-0">
             <strong>Effect of imperfect shuffling.</strong>
             <p>
               If the most likely word is β times more likely than uniform, and
@@ -585,55 +657,100 @@ export function SeedTool() {
               proves uniformity. The physical shuffle is the principal
               uncertainty.
             </p>
-            <table className="data-table">
+            <table className={dataTableClassName}>
               <thead>
                 <tr>
-                  <th scope="col">Maximum word bias</th>
-                  <th scope="col">Min-entropy</th>
+                  <th className={dataHeaderClassName} scope="col">
+                    Maximum word bias
+                  </th>
+                  <th className={dataHeaderClassName} scope="col">
+                    Min-entropy
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>1×</td>
-                  <td>256.0 bits</td>
+                  <td className={dataCellClassName}>1×</td>
+                  <td className={dataCellClassName}>256.0 bits</td>
                 </tr>
                 <tr>
-                  <td>1.1×</td>
-                  <td>252.8 bits</td>
+                  <td className={dataCellClassName}>1.1×</td>
+                  <td className={dataCellClassName}>252.8 bits</td>
                 </tr>
                 <tr>
-                  <td>1.25×</td>
-                  <td>248.6 bits</td>
+                  <td className={dataCellClassName}>1.25×</td>
+                  <td className={dataCellClassName}>248.6 bits</td>
                 </tr>
                 <tr>
-                  <td>2×</td>
-                  <td>233.0 bits</td>
+                  <td className={dataCellClassName}>2×</td>
+                  <td className={dataCellClassName}>233.0 bits</td>
                 </tr>
                 <tr>
-                  <td>4×</td>
-                  <td>210.0 bits</td>
+                  <td className={dataCellClassName}>4×</td>
+                  <td className={dataCellClassName}>210.0 bits</td>
                 </tr>
                 <tr>
-                  <td>8×</td>
-                  <td>187.0 bits</td>
+                  <td className={cn(dataCellClassName, "border-b-0")}>8×</td>
+                  <td className={cn(dataCellClassName, "border-b-0")}>
+                    187.0 bits
+                  </td>
                 </tr>
               </tbody>
             </table>
             <a href="https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf">
               Read the riffle-shuffle analysis
             </a>
-          </div>
+          </Note>
         </div>
-        <p className="callout">
+        <p className={noteClassName}>
           Procedure and analysis adapted from{" "}
           <a href="https://gist.github.com/BullishNode/840e2b001f611b9b1f45dc900510166d">
             Generating a 24-Word BIP39 Phrase with Playing Cards
           </a>
           .
         </p>
-      </section>
+      </Band>
     </>
   );
+}
+
+function Band({ className, ...props }: ComponentProps<"section">) {
+  return (
+    <section
+      className={cn("mt-8 border-t border-rule pt-8", className)}
+      {...props}
+    />
+  );
+}
+
+function BandHeading({
+  className,
+  titleId,
+  title,
+  children,
+}: {
+  className?: string;
+  titleId: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={cn("mb-5", className)}>
+      <h2
+        id={titleId}
+        className="m-0 font-display text-[1.45rem] font-normal tracking-[-0.01em]"
+      >
+        {title}
+      </h2>
+      <p className="mt-[0.3rem] mb-0 max-w-[46rem] text-sm/[1.55] text-ink-2">
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function Note({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn(noteClassName, className)} {...props} />;
 }
 
 function LookupPage({
