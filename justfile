@@ -2,10 +2,16 @@
 dev: dev-stop
     npm run dev
 
-# stop any existing astro development server
+# stop leftover astro and rescript watchers from this project
 [private]
 dev-stop:
-    npx --no-install astro dev stop
+    #!/usr/bin/env bash
+    set -u
+    npx --no-install astro dev stop || true
+    pkill -f "{{justfile_directory()}}/node_modules/.bin/concurrently" || true
+    pkill -f "{{justfile_directory()}}/node_modules/.bin/rescript" || true
+    pkill -f "{{justfile_directory()}}/node_modules/@rescript/.*/bin/rescript.exe" || true
+    rm -f "{{justfile_directory()}}/lib/watch.lock"
 
 # build the site
 build: install

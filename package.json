@@ -6,7 +6,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --names rescript,astro \"npm:res:watch\" \"astro dev\"",
+    "dev": "concurrently --kill-others-on-fail --names rescript,astro \"npm:res:watch\" \"astro dev --host --open http://localhost:4321/\"",
     "build": "npm run res:build && astro build",
     "preview": "astro preview",
     "format": "rescript format && prettier --write . --ignore-path .gitignore",
