@@ -1,5 +1,6 @@
-# development server
+# start the development server and open localhost
 dev: dev-stop
+    (sleep 2 && open http://localhost:4321) &
     npm run dev
 
 # stop leftover astro and rescript watchers from this project
