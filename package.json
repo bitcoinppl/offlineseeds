@@ -61,5 +61,12 @@
     "typescript-eslint": "8.59.3",
     "wrangler": "4.120.0"
   },
-  "type": "module"
+  "type": "module",
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.25.12": true,
+    "fsevents@2.3.3": true,
+    "gentype@4.5.0": true,
+    "workerd@1.20260801.1": true
+  }
 }
