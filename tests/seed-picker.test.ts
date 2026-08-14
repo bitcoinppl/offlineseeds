@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 import { wordlist as englishWordlist } from "@scure/bip39/wordlists/english.js";
+import jsQR from "jsqr";
 import { generateLookupTable as generateDomainLookupTable } from "../lib/SeedPicker.gen";
-import { createLookupPdf } from "../src/adapters/lookup-pdf";
+import {
+  createLookupPdf,
+  encodeShuffleCodeQr,
+} from "../src/adapters/lookup-pdf";
 import { mixRandomSeed } from "../src/adapters/random-seed";
 import {
   CARDS,
@@ -156,6 +160,15 @@ test("creates a complete Letter PDF for the lookup", async () => {
   assert.equal(document.getTitle(), "OfflineSeeds card-to-word lookup");
 });
 
+test("encodes the shuffle code in a scannable QR", () => {
+  const shuffleCode = "pdf-download-check";
+  assert.equal(decodeQrMatrix(encodeShuffleCodeQr(shuffleCode)), shuffleCode);
+  assert.equal(
+    decodeQrMatrix(encodeShuffleCodeQr("a".repeat(128))),
+    "a".repeat(128),
+  );
+});
+
 test("mixes local, RANDOM.ORG, and drand contributions", async () => {
   const fetcher = makeEntropyFetcher();
   const cryptoProvider = makeCryptoProvider(17);
@@ -260,6 +273,32 @@ test("does not use a reduced-source fallback", async () => {
   assert.equal(result.ok, false);
   if (!result.ok) assert.equal(result.error.code, "insufficient-sources");
 });
+
+function decodeQrMatrix(qr: {
+  data: boolean[][];
+  size: number;
+}): string | null {
+  const scale = 8;
+  const width = qr.size * scale;
+  const pixels = new Uint8ClampedArray(width * width * 4);
+
+  for (let row = 0; row < qr.size; row += 1) {
+    for (let col = 0; col < qr.size; col += 1) {
+      const value = qr.data[row]?.[col] === true ? 0 : 255;
+      for (let dy = 0; dy < scale; dy += 1) {
+        for (let dx = 0; dx < scale; dx += 1) {
+          const index = ((row * scale + dy) * width + (col * scale + dx)) * 4;
+          pixels[index] = value;
+          pixels[index + 1] = value;
+          pixels[index + 2] = value;
+          pixels[index + 3] = 255;
+        }
+      }
+    }
+  }
+
+  return jsQR(pixels, width, width)?.data ?? null;
+}
 
 function makeEntropyFetcher(
   randomOrgOffset = 0,

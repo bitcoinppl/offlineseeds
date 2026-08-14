@@ -6,6 +6,7 @@ import {
   rgb,
   type RGB,
 } from "pdf-lib";
+import { encode } from "uqr";
 
 import {
   type Card,
@@ -33,8 +34,15 @@ const GRID_ROW_COUNT = 4;
 const GRID_COLUMN_WIDTH = GRID_WIDTH / GRID_COLUMN_COUNT;
 const GRID_ROW_HEIGHT = LOOKUP_ROW_HEIGHT / GRID_ROW_COUNT;
 const FIRST_ROW_TOP = PAGE_HEIGHT - PAGE_MARGIN - HEADER_HEIGHT - 12;
+// keep the printed code scannable from any sheet without crowding the table
+const QR_SIZE = 64;
+const QR_BORDER = 4;
+const QR_BOTTOM_PAD = 8;
+const QR_X = PAGE_WIDTH - PAGE_MARGIN - QR_SIZE;
+const QR_Y = PAGE_MARGIN + QR_BOTTOM_PAD;
 
 const BLACK = rgb(0.094, 0.094, 0.106);
+const WHITE = rgb(1, 1, 1);
 const RED = rgb(0.725, 0.11, 0.11);
 const MUTED = rgb(0.322, 0.322, 0.357);
 const RULE = rgb(0.63, 0.63, 0.667);
@@ -62,6 +70,7 @@ export async function createLookupPdf(table: LookupTable): Promise<Uint8Array> {
   const instructionsPage = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   drawHeader(instructionsPage, fonts, table.seed, 1);
   drawInstructions(instructionsPage, fonts);
+  drawShuffleCodeQr(instructionsPage, table.seed);
 
   for (let pageIndex = 0; pageIndex < TABLE_PAGE_COUNT; pageIndex += 1) {
     const page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
@@ -71,6 +80,7 @@ export async function createLookupPdf(table: LookupTable): Promise<Uint8Array> {
     drawHeader(page, fonts, table.seed, pageIndex + 2);
     rows.forEach((row, rowIndex) => drawLookupRow(page, fonts, row, rowIndex));
     drawFooter(page, fonts);
+    drawShuffleCodeQr(page, table.seed);
   }
 
   return document.save();
@@ -369,11 +379,12 @@ function drawSecondCard(
 }
 
 function drawFooter(page: PDFPage, fonts: PdfFonts) {
-  const footerY = 87;
+  const ruleY = QR_Y + QR_SIZE + 8;
+  const footerY = QR_Y + QR_SIZE / 2 - 2;
 
   page.drawLine({
-    start: { x: PAGE_MARGIN, y: footerY + 14 },
-    end: { x: PAGE_WIDTH - PAGE_MARGIN, y: footerY + 14 },
+    start: { x: PAGE_MARGIN, y: ruleY },
+    end: { x: PAGE_WIDTH - PAGE_MARGIN, y: ruleY },
     thickness: 0.5,
     color: LIGHT_RULE,
   });
@@ -387,6 +398,47 @@ function drawFooter(page: PDFPage, fonts: PdfFonts) {
       color: MUTED,
     },
   );
+}
+
+/** Encode the shuffle code with print-safe error correction and quiet zone. */
+export function encodeShuffleCodeQr(shuffleCode: string) {
+  return encode(shuffleCode, { ecc: "M", border: QR_BORDER });
+}
+
+function drawShuffleCodeQr(page: PDFPage, shuffleCode: string) {
+  const qr = encodeShuffleCodeQr(shuffleCode);
+  const module = QR_SIZE / qr.size;
+
+  page.drawRectangle({
+    x: QR_X,
+    y: QR_Y,
+    width: QR_SIZE,
+    height: QR_SIZE,
+    color: WHITE,
+  });
+
+  for (let row = 0; row < qr.size; row += 1) {
+    const line = qr.data[row];
+    let runStart: number | null = null;
+
+    for (let col = 0; col <= qr.size; col += 1) {
+      const on = col < qr.size && line[col] === true;
+      if (on) {
+        if (runStart === null) runStart = col;
+        continue;
+      }
+      if (runStart === null) continue;
+
+      page.drawRectangle({
+        x: QR_X + runStart * module,
+        y: QR_Y + (qr.size - 1 - row) * module,
+        width: (col - runStart) * module,
+        height: module,
+        color: BLACK,
+      });
+      runStart = null;
+    }
+  }
 }
 
 function drawSuit(
