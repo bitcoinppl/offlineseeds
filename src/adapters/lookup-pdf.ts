@@ -25,6 +25,9 @@ const ROWS_PER_PAGE = 4;
 const PAGE_MARGIN = 36;
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
 const HEADER_HEIGHT = 28;
+const QR_SIZE = 42;
+const QR_BORDER = 2;
+const QR_TEXT_GAP = 12;
 const LOOKUP_ROW_HEIGHT = 135;
 const LOOKUP_ROW_GAP = 8;
 const FIRST_CARD_WIDTH = 36;
@@ -34,12 +37,6 @@ const GRID_ROW_COUNT = 4;
 const GRID_COLUMN_WIDTH = GRID_WIDTH / GRID_COLUMN_COUNT;
 const GRID_ROW_HEIGHT = LOOKUP_ROW_HEIGHT / GRID_ROW_COUNT;
 const FIRST_ROW_TOP = PAGE_HEIGHT - PAGE_MARGIN - HEADER_HEIGHT - 12;
-// keep the printed code scannable from any sheet without crowding the table
-const QR_SIZE = 64;
-const QR_BORDER = 4;
-const QR_BOTTOM_PAD = 8;
-const QR_X = PAGE_WIDTH - PAGE_MARGIN - QR_SIZE;
-const QR_Y = PAGE_MARGIN + QR_BOTTOM_PAD;
 
 const BLACK = rgb(0.094, 0.094, 0.106);
 const WHITE = rgb(1, 1, 1);
@@ -68,19 +65,20 @@ export async function createLookupPdf(table: LookupTable): Promise<Uint8Array> {
   document.setProducer("OfflineSeeds");
 
   const instructionsPage = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-  drawHeader(instructionsPage, fonts, table.seed, 1);
+  drawHeader(instructionsPage, fonts, 1);
   drawInstructions(instructionsPage, fonts);
-  drawShuffleCodeQr(instructionsPage, table.seed);
+  drawFooter(instructionsPage, fonts, table.seed);
 
   for (let pageIndex = 0; pageIndex < TABLE_PAGE_COUNT; pageIndex += 1) {
     const page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
     const start = pageIndex * ROWS_PER_PAGE;
     const rows = table.rows.slice(start, start + ROWS_PER_PAGE);
 
-    drawHeader(page, fonts, table.seed, pageIndex + 2);
+    drawHeader(page, fonts, pageIndex + 2);
     rows.forEach((row, rowIndex) => drawLookupRow(page, fonts, row, rowIndex));
-    drawFooter(page, fonts);
-    drawShuffleCodeQr(page, table.seed);
+    drawFooter(page, fonts, table.seed, {
+      hint: "First card at left. Second card and word in the grid. A dash is a blank pair.",
+    });
   }
 
   return document.save();
@@ -163,8 +161,8 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
 function drawInstructions(page: PDFPage, fonts: PdfFonts) {
   const titleSize = 10;
   const lineSize = 9;
-  const lineHeight = 14;
-  const sectionGap = 12;
+  const lineHeight = 13;
+  const sectionGap = 8;
   let y = PAGE_HEIGHT - PAGE_MARGIN - HEADER_HEIGHT - 26;
 
   page.drawText("How to use this table", {
@@ -174,9 +172,9 @@ function drawInstructions(page: PDFPage, fonts: PdfFonts) {
     font: fonts.bold,
     color: BLACK,
   });
-  y -= 26;
+  y -= 22;
 
-  for (const section of INSTRUCTION_SECTIONS) {
+  INSTRUCTION_SECTIONS.forEach((section, sectionIndex) => {
     page.drawText(section.title, {
       x: PAGE_MARGIN,
       y,
@@ -197,39 +195,21 @@ function drawInstructions(page: PDFPage, fonts: PdfFonts) {
       y -= lineHeight;
     }
 
-    y -= sectionGap;
-  }
+    if (sectionIndex < INSTRUCTION_SECTIONS.length - 1) y -= sectionGap;
+  });
 }
 
-function drawHeader(
-  page: PDFPage,
-  fonts: PdfFonts,
-  shuffleCode: string,
-  pageNumber: number,
-) {
+function drawHeader(page: PDFPage, fonts: PdfFonts, pageNumber: number) {
   const top = PAGE_HEIGHT - PAGE_MARGIN;
   const baseline = top - 11;
   const pageLabel = `${pageNumber} / ${TOTAL_PAGE_COUNT}`;
   const pageLabelWidth = fonts.regular.widthOfTextAtSize(pageLabel, 8);
-  const codeAreaStart = PAGE_MARGIN + 82;
-  const codeAreaEnd = PAGE_WIDTH - PAGE_MARGIN - pageLabelWidth - 18;
-  const codeAreaWidth = codeAreaEnd - codeAreaStart;
-  const code = `Shuffle code: ${shuffleCode}`;
-  const codeSize = fitTextSize(fonts.regular, code, codeAreaWidth, 7, 4.5);
-  const codeWidth = fonts.regular.widthOfTextAtSize(code, codeSize);
 
   page.drawText("OfflineSeeds", {
     x: PAGE_MARGIN,
     y: baseline,
     size: 10,
     font: fonts.bold,
-    color: BLACK,
-  });
-  page.drawText(code, {
-    x: codeAreaStart + (codeAreaWidth - codeWidth) / 2,
-    y: baseline + (7 - codeSize) / 2,
-    size: codeSize,
-    font: fonts.regular,
     color: BLACK,
   });
   page.drawText(pageLabel, {
@@ -378,9 +358,22 @@ function drawSecondCard(
   drawSuit(page, card.suit, rankX + rankWidth + 1.2, rankY + 5.5, 5.2, color);
 }
 
-function drawFooter(page: PDFPage, fonts: PdfFonts) {
-  const ruleY = QR_Y + QR_SIZE + 8;
-  const footerY = QR_Y + QR_SIZE / 2 - 2;
+function drawFooter(
+  page: PDFPage,
+  fonts: PdfFonts,
+  shuffleCode: string,
+  options: Readonly<{ hint?: string }> = {},
+) {
+  const qrX = PAGE_MARGIN;
+  const qrY = PAGE_MARGIN;
+  const ruleY = qrY + QR_SIZE + 8;
+  const textAreaStart = qrX + QR_SIZE + QR_TEXT_GAP;
+  const textAreaWidth = PAGE_WIDTH - PAGE_MARGIN - textAreaStart;
+  const code = `Shuffle code: ${shuffleCode}`;
+  const codeSize = fitTextSize(fonts.regular, code, textAreaWidth, 8, 4.5);
+  const codeWidth = fonts.regular.widthOfTextAtSize(code, codeSize);
+  const codeX = textAreaStart + (textAreaWidth - codeWidth) / 2;
+  const codeY = qrY + (QR_SIZE - codeSize) / 2;
 
   page.drawLine({
     start: { x: PAGE_MARGIN, y: ruleY },
@@ -388,16 +381,23 @@ function drawFooter(page: PDFPage, fonts: PdfFonts) {
     thickness: 0.5,
     color: LIGHT_RULE,
   });
-  page.drawText(
-    "First card at left. Second card and word in the grid. A dash is a blank pair.",
-    {
+  if (options.hint) {
+    page.drawText(options.hint, {
       x: PAGE_MARGIN,
-      y: footerY,
+      y: ruleY + 8,
       size: 7,
       font: fonts.regular,
       color: MUTED,
-    },
-  );
+    });
+  }
+  drawShuffleCodeQr(page, shuffleCode, qrX, qrY, QR_SIZE);
+  page.drawText(code, {
+    x: codeX,
+    y: codeY,
+    size: codeSize,
+    font: fonts.regular,
+    color: BLACK,
+  });
 }
 
 /** Encode the shuffle code with print-safe error correction and quiet zone. */
@@ -405,15 +405,20 @@ export function encodeShuffleCodeQr(shuffleCode: string) {
   return encode(shuffleCode, { ecc: "M", border: QR_BORDER });
 }
 
-function drawShuffleCodeQr(page: PDFPage, shuffleCode: string) {
+function drawShuffleCodeQr(
+  page: PDFPage,
+  shuffleCode: string,
+  x: number,
+  y: number,
+  size: number,
+) {
   const qr = encodeShuffleCodeQr(shuffleCode);
-  const module = QR_SIZE / qr.size;
 
   page.drawRectangle({
-    x: QR_X,
-    y: QR_Y,
-    width: QR_SIZE,
-    height: QR_SIZE,
+    x,
+    y,
+    width: size,
+    height: size,
     color: WHITE,
   });
 
@@ -429,11 +434,16 @@ function drawShuffleCodeQr(page: PDFPage, shuffleCode: string) {
       }
       if (runStart === null) continue;
 
+      // index/size keeps adjacent runs on shared edges
+      const left = x + (runStart * size) / qr.size;
+      const right = x + (col * size) / qr.size;
+      const bottom = y + ((qr.size - row - 1) * size) / qr.size;
+      const top = y + ((qr.size - row) * size) / qr.size;
       page.drawRectangle({
-        x: QR_X + runStart * module,
-        y: QR_Y + (qr.size - 1 - row) * module,
-        width: (col - runStart) * module,
-        height: module,
+        x: left,
+        y: bottom,
+        width: right - left,
+        height: top - bottom,
         color: BLACK,
       });
       runStart = null;
