@@ -286,10 +286,10 @@ export function SeedTool() {
           <li>
             <span>2</span>
             <p>
-              <strong>Test the wallet first.</strong> Use disposable test words
-              to confirm that an empty COLDCARD shows eight valid final words,
-              or that an air-gapped SeedSigner accepts three coin flips. Do this
-              before you draw the real words.
+              <strong>First-time dry run.</strong> If you have never finished
+              word 24 on this device, do one dry run with disposable words
+              first. Confirm the import or calc path works before you draw real
+              words.
             </p>
           </li>
           <li>

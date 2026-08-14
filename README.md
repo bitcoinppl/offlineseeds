@@ -25,8 +25,9 @@ SeedSigner for word 24, and a private room without cameras or microphones.
 Prepare:
 
 1. Count all 52 distinct cards. Remove the jokers and advertising cards.
-2. Test the wallet's final-word function with disposable words before the real
-   run. Do not discover an incompatible wallet after you draw the real words.
+2. If you have never finished word 24 on this device, do one dry run with
+   disposable words first. Confirm the import or calc path works before you
+   draw real words.
 
 Generate words 1–23. For each word:
 

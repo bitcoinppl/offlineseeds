@@ -97,7 +97,7 @@ const INSTRUCTION_SECTIONS: readonly InstructionSection[] = [
     title: "Prepare",
     lines: [
       "1. Count all 52 distinct cards. Remove the jokers and advertising cards.",
-      "2. Test the wallet's final-word function with disposable words before the real run.",
+      "2. If you have never finished word 24 on this device, do one dry run with disposable words first.",
     ],
   },
   {

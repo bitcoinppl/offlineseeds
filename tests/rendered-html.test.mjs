@@ -22,8 +22,8 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.match(html, /Riffle-shuffle the full deck 12 times/);
   assert.match(html, /12 times in loose, uneven groups/);
   assert.match(html, /Do not continue through the remaining deck/);
-  assert.match(html, /empty COLDCARD shows eight valid final words/);
-  assert.match(html, /SeedSigner accepts three coin flips/);
+  assert.match(html, /If you have never finished word 24 on this device/);
+  assert.match(html, /dry run with disposable words/);
   assert.match(html, /Flip a fair coin three times/);
   assert.doesNotMatch(html, /A=TTT|2=TTH|3=THT/);
   assert.match(html, /phrase has 253 bits rather than 256 bits/);
@@ -32,7 +32,7 @@ test("renders the finished OfflineSeeds product shell", async () => {
   assert.match(html, /Never redraw only one card/);
   assert.match(html, /Do not swap them/);
   assert.match(html, /without cameras or microphones/);
-  assert.match(html, /Test the wallet first/);
+  assert.match(html, /First-time dry run/);
   assert.match(html, /The 23 words supply 253 bits/);
   assert.match(html, /Entropy analysis/);
   assert.doesNotMatch(html, /One seed\. One deck\./);
