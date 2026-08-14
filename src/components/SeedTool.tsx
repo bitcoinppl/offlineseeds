@@ -1,9 +1,11 @@
 import {
   type ComponentProps,
+  type KeyboardEvent,
   type ReactNode,
   type SyntheticEvent,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -59,6 +61,34 @@ const dataTableClassName =
 
 const dataCellClassName =
   "border-b border-rule py-1.5 text-left last:text-right";
+
+// the last word is produced on the wallet, so each supported device gets its
+// own procedure; the reader follows exactly one of them
+type DeviceId = "coldcard" | "seedsigner";
+
+const DEVICES: readonly Readonly<{
+  id: DeviceId;
+  label: string;
+  steps: readonly string[];
+}>[] = [
+  {
+    id: "coldcard",
+    label: "COLDCARD",
+    steps: [
+      "On an empty COLDCARD, choose Import Existing, then 24 Words, and enter the 23 words. The device shows eight final words. Count positions 1 through 8 from the top of the list.",
+      "Restore all 52 cards, shuffle as above, and draw the top card. Ace selects the first word, 2 selects the second word, and so on through 8. For 9 through King, return the card, shuffle the full deck, and draw again.",
+      "Record word 24, confirm the complete phrase on the device, and destroy the temporary notes. Do not pick a word without the card draw.",
+    ],
+  },
+  {
+    id: "seedsigner",
+    label: "SeedSigner",
+    steps: [
+      "On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word, then 24 words. Enter the 23 words and choose Coin Flip Entropy.",
+      "Flip a fair coin three times and enter each Heads or Tails result. SeedSigner displays word 24. Record it, confirm the complete phrase, and destroy the temporary notes.",
+    ],
+  },
+];
 
 const dataHeaderClassName = cn(
   dataCellClassName,
@@ -520,39 +550,7 @@ export function SeedTool() {
             shuffled before each word.
           </p>
         </Note>
-        <Note lead="Finish with COLDCARD.">
-          <ol className="list-decimal space-y-1.5 pl-5 marker:text-ink-3">
-            <li>
-              On an empty COLDCARD, choose Import Existing, then 24 Words, and
-              enter the 23 words. The device shows eight final words. Count
-              positions 1 through 8 from the top of the list.
-            </li>
-            <li>
-              Restore all 52 cards, shuffle as above, and draw the top card. Ace
-              selects the first word, 2 selects the second word, and so on
-              through 8. For 9 through King, return the card, shuffle the full
-              deck, and draw again.
-            </li>
-            <li>
-              Record word 24, confirm the complete phrase on the device, and
-              destroy the temporary notes. Do not pick a word without the card
-              draw.
-            </li>
-          </ol>
-        </Note>
-        <Note lead="Finish with SeedSigner.">
-          <ol className="list-decimal space-y-1.5 pl-5 marker:text-ink-3">
-            <li>
-              On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
-              then 24 words. Enter the 23 words and choose Coin Flip Entropy.
-            </li>
-            <li>
-              Flip a fair coin three times and enter each Heads or Tails result.
-              SeedSigner displays word 24. Record it, confirm the complete
-              phrase, and destroy the temporary notes.
-            </li>
-          </ol>
-        </Note>
+        <DeviceSteps />
         <Note lead="Keep the words off computers.">
           <p>
             Do not enter the words into this site, a phone, or any
@@ -692,13 +690,6 @@ export function SeedTool() {
             Read the riffle-shuffle analysis
           </a>
         </Note>
-        <p className={calloutClassName}>
-          Procedure and analysis adapted from{" "}
-          <a href="https://gist.github.com/BullishNode/840e2b001f611b9b1f45dc900510166d">
-            Generating a 24-Word BIP39 Phrase with Playing Cards
-          </a>
-          .
-        </p>
       </Band>
     </>
   );
@@ -760,6 +751,75 @@ function Note({
         {children}
       </div>
     </div>
+  );
+}
+
+// both panels stay mounted so the static HTML keeps every step; only the
+// active one is visible
+function DeviceSteps() {
+  const [device, setDevice] = useState<DeviceId>(DEVICES[0].id);
+  const baseId = useId();
+  const tabId = (id: DeviceId) => `${baseId}-tab-${id}`;
+  const panelId = (id: DeviceId) => `${baseId}-panel-${id}`;
+
+  const moveFocus = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const step =
+      event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+    if (step === 0) return;
+
+    event.preventDefault();
+    const current = DEVICES.findIndex((entry) => entry.id === device);
+    const next = DEVICES[(current + step + DEVICES.length) % DEVICES.length];
+    setDevice(next.id);
+    document.getElementById(tabId(next.id))?.focus();
+  };
+
+  return (
+    <Note lead="Finish on your device.">
+      <div
+        aria-label="Wallet"
+        className="flex gap-6 border-b border-rule"
+        role="tablist"
+      >
+        {DEVICES.map((entry) => (
+          <button
+            aria-controls={panelId(entry.id)}
+            aria-selected={entry.id === device}
+            className={cn(
+              "-mb-px border-b-2 pb-2 text-sm transition-colors duration-150 ease-[ease] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-1",
+              entry.id === device
+                ? "border-ink-1 font-semibold text-ink-1"
+                : "border-transparent text-ink-3 hover:text-ink-1",
+            )}
+            id={tabId(entry.id)}
+            key={entry.id}
+            onClick={() => setDevice(entry.id)}
+            onKeyDown={moveFocus}
+            role="tab"
+            tabIndex={entry.id === device ? 0 : -1}
+            type="button"
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
+      {DEVICES.map((entry) => (
+        <div
+          aria-labelledby={tabId(entry.id)}
+          hidden={entry.id !== device}
+          id={panelId(entry.id)}
+          key={entry.id}
+          role="tabpanel"
+          tabIndex={0}
+        >
+          <ol className="list-decimal space-y-1.5 pl-5 marker:text-ink-3">
+            {entry.steps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </Note>
   );
 }
 
