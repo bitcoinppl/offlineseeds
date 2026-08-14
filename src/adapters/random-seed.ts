@@ -17,7 +17,11 @@ export type EntropySource = Readonly<{
 }>;
 
 export type MixedSeedError = Readonly<{
-  code: "local-unavailable" | "insufficient-sources" | "mix-failed";
+  code:
+    | "insecure-context"
+    | "local-unavailable"
+    | "insufficient-sources"
+    | "mix-failed";
   message: string;
 }>;
 
@@ -57,6 +61,11 @@ const SOURCES = {
 export async function mixRandomSeed(
   options: MixedSeedOptions = {},
 ): Promise<MixedSeedResult> {
+  const usingDefaultCrypto = options.cryptoProvider === undefined;
+  if (usingDefaultCrypto && globalThis.isSecureContext === false) {
+    return insecureContext();
+  }
+
   const cryptoProvider = options.cryptoProvider ?? globalThis.crypto;
   if (!cryptoProvider?.getRandomValues || !cryptoProvider.subtle) {
     return localUnavailable();
@@ -199,6 +208,17 @@ function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
     "",
   );
+}
+
+function insecureContext(): MixedSeedResult {
+  return {
+    ok: false,
+    error: {
+      code: "insecure-context",
+      message:
+        "This page is not a secure context. Open http://localhost:4321 or use HTTPS.",
+    },
+  };
 }
 
 function localUnavailable(): MixedSeedResult {

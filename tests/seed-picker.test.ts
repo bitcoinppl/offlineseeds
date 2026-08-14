@@ -200,6 +200,35 @@ test("uses every accepted entropy contribution in the mixed seed", async () => {
   assert.equal(new Set(seeds).size, results.length);
 });
 
+test("explains when the page is not a secure context", async () => {
+  const previous = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "isSecureContext",
+  );
+  Object.defineProperty(globalThis, "isSecureContext", {
+    configurable: true,
+    value: false,
+  });
+
+  try {
+    const result = await mixRandomSeed({
+      fetcher: makeEntropyFetcher(),
+    });
+
+    assert.equal(result.ok, false);
+    if (!result.ok) {
+      assert.equal(result.error.code, "insecure-context");
+      assert.match(result.error.message, /localhost:4321/);
+    }
+  } finally {
+    if (previous) {
+      Object.defineProperty(globalThis, "isSecureContext", previous);
+    } else {
+      Reflect.deleteProperty(globalThis, "isSecureContext");
+    }
+  }
+});
+
 test("requires local randomness and every independent network source", async () => {
   const unavailableFetcher: typeof fetch = async () =>
     new Response("Unavailable", { status: 503 });
