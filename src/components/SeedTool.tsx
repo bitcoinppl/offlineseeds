@@ -51,13 +51,14 @@ const suitTone: Record<Card["color"], string> = {
 const deckCardClassName =
   "h-[3.4rem] min-w-0 rounded-[0.35rem] border border-rule-strong bg-paper-0 p-0 font-display text-[1.05rem] font-bold shadow-card transition-[transform,box-shadow] duration-[130ms] ease-[ease] hover:-translate-y-0.5 hover:bg-paper-0 hover:shadow-lift aria-pressed:z-[1] aria-pressed:-translate-y-0.5 aria-pressed:border-ink-1 aria-pressed:bg-ink-1 aria-pressed:text-paper-0 aria-pressed:shadow-lift aria-pressed:hover:-translate-y-0.5 aria-pressed:hover:bg-ink-1 aria-pressed:hover:shadow-lift motion-reduce:transform-none motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:aria-pressed:transform-none motion-reduce:aria-pressed:hover:transform-none";
 
-const noteClassName =
+const calloutClassName =
   "mt-5 border-t border-rule pt-[0.9rem] text-note leading-[1.55] text-ink-2 [&_strong]:block [&_strong]:text-sm [&_strong]:font-semibold [&_strong]:text-ink-1 [&_p]:m-0 [&_strong+p]:mt-[0.3rem] [&_a]:mt-2 [&_a]:inline-block [&_a]:font-medium [&_a]:text-note [&_a]:text-ink-1 [&_a]:underline [&_a]:decoration-rule-strong [&_a]:underline-offset-[3px] [&_a]:transition-[text-decoration-color] [&_a]:duration-150 [&_a]:ease-[ease] [&_a:hover]:decoration-current [&_a:focus-visible]:decoration-current";
 
 const dataTableClassName =
-  "mt-3 border-collapse text-note text-ink-2 [font-variant-numeric:lining-nums_tabular-nums]";
+  "w-full max-w-sm border-collapse tabular-nums text-note text-ink-2 [&_tbody_tr:last-child_td]:border-b-0";
 
-const dataCellClassName = "border-b border-rule py-1 pr-6 text-left";
+const dataCellClassName =
+  "border-b border-rule py-1.5 text-left last:text-right";
 
 const dataHeaderClassName = cn(
   dataCellClassName,
@@ -293,7 +294,12 @@ export function SeedTool() {
             </p>
           ) : null}
 
-          <Note className="col-start-1 row-auto m-0 border-t border-rule pt-[0.9rem] md:col-start-2 md:row-start-1 md:border-t-0 md:pt-0">
+          <div
+            className={cn(
+              calloutClassName,
+              "col-start-1 row-auto m-0 border-t border-rule pt-[0.9rem] md:col-start-2 md:row-start-1 md:border-t-0 md:pt-0",
+            )}
+          >
             <strong>
               Do not enter a wallet recovery phrase as a shuffle code.
             </strong>
@@ -302,7 +308,7 @@ export function SeedTool() {
               appears in the page URL. Your phrase comes from the shuffled deck,
               not from this code.
             </p>
-          </Note>
+          </div>
         </div>
       </Band>
 
@@ -495,78 +501,73 @@ export function SeedTool() {
           Follow these rules during draws. Finish the phrase only on a
           compatible offline wallet.
         </BandHeading>
-        <div className="mt-7 grid grid-cols-1 gap-x-12 gap-y-[1.35rem] md:grid-cols-2">
-          <Note className="mt-0">
-            <strong>Follow the draw rules exactly.</strong>
-            <ul className="mt-[0.3rem] mb-0 list-none pl-[1.1rem] text-note leading-[1.55] text-ink-2 marker:text-ink-3 [&_li+li]:mt-1">
-              <li>Accept every nonblank entry, including same-suit pairs.</li>
-              <li>Never reverse a pair to avoid a blank.</li>
-              <li>Never redraw only one card.</li>
-              <li>
-                Accept repeated cards, pairs, and words. Do not replace a result
-                because it looks unusual.
-              </li>
-              <li>Keep accepted and rejected draws private.</li>
-            </ul>
-          </Note>
-          <Note className="mt-0">
-            <strong>All 2,048 words can occur.</strong>
-            <p>
-              Each word has one accepted card pair. A blank pair is a retry.
-              This keeps all accepted words equally likely when the deck is well
-              shuffled before each word.
-            </p>
-          </Note>
-          <Note className="mt-0">
-            <strong>Finish with COLDCARD.</strong>
-            <p>
+        <Note lead="Follow the draw rules exactly.">
+          <ul className="list-disc space-y-1.5 pl-4 marker:text-ink-3">
+            <li>Accept every nonblank entry, including same-suit pairs.</li>
+            <li>Never reverse a pair to avoid a blank.</li>
+            <li>Never redraw only one card.</li>
+            <li>
+              Accept repeated cards, pairs, and words. Do not replace a result
+              because it looks unusual.
+            </li>
+            <li>Keep accepted and rejected draws private.</li>
+          </ul>
+        </Note>
+        <Note lead="All 2,048 words can occur.">
+          <p>
+            Each word has one accepted card pair. A blank pair is a retry. This
+            keeps all accepted words equally likely when the deck is well
+            shuffled before each word.
+          </p>
+        </Note>
+        <Note lead="Finish with COLDCARD.">
+          <ol className="list-decimal space-y-1.5 pl-5 marker:text-ink-3">
+            <li>
               On an empty COLDCARD, choose Import Existing, then 24 Words, and
               enter the 23 words. The device shows eight final words. Count
               positions 1 through 8 from the top of the list.
-            </p>
-            <p>
+            </li>
+            <li>
               Restore all 52 cards, shuffle as above, and draw the top card. Ace
               selects the first word, 2 selects the second word, and so on
               through 8. For 9 through King, return the card, shuffle the full
               deck, and draw again.
-            </p>
-            <p>
+            </li>
+            <li>
               Record word 24, confirm the complete phrase on the device, and
               destroy the temporary notes. Do not pick a word without the card
               draw.
-            </p>
-          </Note>
-          <Note className="mt-0">
-            <strong>Finish with SeedSigner.</strong>
-            <p>
+            </li>
+          </ol>
+        </Note>
+        <Note lead="Finish with SeedSigner.">
+          <ol className="list-decimal space-y-1.5 pl-5 marker:text-ink-3">
+            <li>
               On an air-gapped SeedSigner, choose Tools, Calc 12th/24th word,
               then 24 words. Enter the 23 words and choose Coin Flip Entropy.
-            </p>
-            <p>
+            </li>
+            <li>
               Flip a fair coin three times and enter each Heads or Tails result.
               SeedSigner displays word 24. Record it, confirm the complete
               phrase, and destroy the temporary notes.
-            </p>
-          </Note>
-          <Note className="mt-0">
-            <strong>Keep the words off computers.</strong>
-            <p>
-              Do not enter the words into this site, a phone, or any
-              general-purpose computer. The first electronic entry of the 23
-              words is on the offline wallet itself.
-            </p>
-          </Note>
-          <Note className="mt-0">
-            <strong>Optional: verify with a second offline wallet.</strong>
-            <p>
-              Enter the complete phrase on a second compatible, air-gapped
-              wallet. Compare the master key fingerprint on both devices. Wipe
-              the verification device when you finish. Each extra device that
-              sees the phrase adds exposure, so do this check only if you need
-              it.
-            </p>
-          </Note>
-        </div>
+            </li>
+          </ol>
+        </Note>
+        <Note lead="Keep the words off computers.">
+          <p>
+            Do not enter the words into this site, a phone, or any
+            general-purpose computer. The first electronic entry of the 23 words
+            is on the offline wallet itself.
+          </p>
+        </Note>
+        <Note lead="Optional: verify with a second offline wallet.">
+          <p>
+            Enter the complete phrase on a second compatible, air-gapped wallet.
+            Compare the master key fingerprint on both devices. Wipe the
+            verification device when you finish. Each extra device that sees the
+            phrase adds exposure, so do this check only if you need it.
+          </p>
+        </Note>
       </Band>
 
       <Band className="print:hidden" aria-labelledby="entropy-title">
@@ -574,135 +575,124 @@ export function SeedTool() {
           An ideal shuffle makes each ordered pair equally likely. The numbers
           below are exact under that assumption.
         </BandHeading>
-        <div className="mt-7 grid grid-cols-1 gap-x-12 gap-y-[1.35rem] md:grid-cols-2">
-          <Note className="mt-0">
-            <strong>Pair space.</strong>
-            <p>
-              Two ordered cards give 52 × 51 = 2,652 possible pairs. The table
-              accepts 2,048 pairs: 2,028 with different suits and 20 with the
-              same suit. The other 604 pairs are blank. Each accepted pair maps
-              to exactly one BIP39 word.
-            </p>
-          </Note>
-          <Note className="mt-0">
-            <strong>Bits per word.</strong>
-            <p>
-              A draw is accepted with probability 2,048 / 2,652 ≈ 77.2%. Each
-              accepted word is uniform over 2,048 possibilities and supplies
-              log₂(2,048) = 11 bits. The 23 words supply 253 bits. The final
-              Ace-to-8 card draw adds 3 random bits for a total of 256 bits. The
-              8-bit checksum adds no randomness.
-            </p>
-            <p>
-              If you always choose the same final position, the phrase has 253
-              bits rather than 256 bits. The final card draw is required for the
-              256-bit claim.
-            </p>
-            <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
-              Read the BIP39 specification
-            </a>
-          </Note>
-          <Note className="mt-0">
-            <strong>Expected attempts.</strong>
-            <p>
-              23 accepted words take approximately 29.8 attempts with
-              approximately 6.8 blanks. A run with no blank at all has only a
-              0.26% probability.
-            </p>
-            <table className={dataTableClassName}>
-              <thead>
-                <tr>
-                  <th className={dataHeaderClassName} scope="col">
-                    Attempts
-                  </th>
-                  <th className={dataHeaderClassName} scope="col">
-                    Probability of 23 words
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className={dataCellClassName}>30</td>
-                  <td className={dataCellClassName}>62.8%</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>34</td>
-                  <td className={dataCellClassName}>93.3%</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>35</td>
-                  <td className={dataCellClassName}>96.1%</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>38</td>
-                  <td className={dataCellClassName}>99.4%</td>
-                </tr>
-                <tr>
-                  <td className={cn(dataCellClassName, "border-b-0")}>41</td>
-                  <td className={cn(dataCellClassName, "border-b-0")}>
-                    99.93%
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Note>
-          <Note className="mt-0">
-            <strong>Effect of imperfect shuffling.</strong>
-            <p>
-              If the most likely word is β times more likely than uniform, and
-              the final draw supplies 3 independent bits, the min-entropy is 253
-              − 23 × log₂(β) + 3 bits. In the ideal riffle model, the distance
-              from uniform is 0.334 after 7 shuffles and about 0.011 after 12.
-              Real hand shuffles can differ from that model, and no fixed count
-              proves uniformity. The physical shuffle is the principal
-              uncertainty.
-            </p>
-            <table className={dataTableClassName}>
-              <thead>
-                <tr>
-                  <th className={dataHeaderClassName} scope="col">
-                    Maximum word bias
-                  </th>
-                  <th className={dataHeaderClassName} scope="col">
-                    Min-entropy
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className={dataCellClassName}>1×</td>
-                  <td className={dataCellClassName}>256.0 bits</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>1.1×</td>
-                  <td className={dataCellClassName}>252.8 bits</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>1.25×</td>
-                  <td className={dataCellClassName}>248.6 bits</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>2×</td>
-                  <td className={dataCellClassName}>233.0 bits</td>
-                </tr>
-                <tr>
-                  <td className={dataCellClassName}>4×</td>
-                  <td className={dataCellClassName}>210.0 bits</td>
-                </tr>
-                <tr>
-                  <td className={cn(dataCellClassName, "border-b-0")}>8×</td>
-                  <td className={cn(dataCellClassName, "border-b-0")}>
-                    187.0 bits
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <a href="https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf">
-              Read the riffle-shuffle analysis
-            </a>
-          </Note>
-        </div>
-        <p className={noteClassName}>
+        <Note lead="Pair space.">
+          <p>
+            Two ordered cards give 52 × 51 = 2,652 possible pairs. The table
+            accepts 2,048 pairs: 2,028 with different suits and 20 with the same
+            suit. The other 604 pairs are blank. Each accepted pair maps to
+            exactly one BIP39 word.
+          </p>
+        </Note>
+        <Note lead="Bits per word.">
+          <p>
+            A draw is accepted with probability 2,048 / 2,652 ≈ 77.2%. Each
+            accepted word is uniform over 2,048 possibilities and supplies
+            log₂(2,048) = 11 bits. The 23 words supply 253 bits. The final
+            Ace-to-8 card draw adds 3 random bits for a total of 256 bits. The
+            8-bit checksum adds no randomness.
+          </p>
+          <p>
+            If you always choose the same final position, the phrase has 253
+            bits rather than 256 bits. The final card draw is required for the
+            256-bit claim.
+          </p>
+          <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">
+            Read the BIP39 specification
+          </a>
+        </Note>
+        <Note lead="Expected attempts.">
+          <p>
+            23 accepted words take approximately 29.8 attempts with
+            approximately 6.8 blanks. A run with no blank at all has only a
+            0.26% probability.
+          </p>
+          <table className={dataTableClassName}>
+            <thead>
+              <tr>
+                <th className={dataHeaderClassName} scope="col">
+                  Attempts
+                </th>
+                <th className={dataHeaderClassName} scope="col">
+                  Probability of 23 words
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={dataCellClassName}>30</td>
+                <td className={dataCellClassName}>62.8%</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>34</td>
+                <td className={dataCellClassName}>93.3%</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>35</td>
+                <td className={dataCellClassName}>96.1%</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>38</td>
+                <td className={dataCellClassName}>99.4%</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>41</td>
+                <td className={dataCellClassName}>99.93%</td>
+              </tr>
+            </tbody>
+          </table>
+        </Note>
+        <Note lead="Effect of imperfect shuffling.">
+          <p>
+            If the most likely word is β times more likely than uniform, and the
+            final draw supplies 3 independent bits, the min-entropy is 253 − 23
+            × log₂(β) + 3 bits. In the ideal riffle model, the distance from
+            uniform is 0.334 after 7 shuffles and about 0.011 after 12. Real
+            hand shuffles can differ from that model, and no fixed count proves
+            uniformity. The physical shuffle is the principal uncertainty.
+          </p>
+          <table className={dataTableClassName}>
+            <thead>
+              <tr>
+                <th className={dataHeaderClassName} scope="col">
+                  Maximum word bias
+                </th>
+                <th className={dataHeaderClassName} scope="col">
+                  Min-entropy
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={dataCellClassName}>1×</td>
+                <td className={dataCellClassName}>256.0 bits</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>1.1×</td>
+                <td className={dataCellClassName}>252.8 bits</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>1.25×</td>
+                <td className={dataCellClassName}>248.6 bits</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>2×</td>
+                <td className={dataCellClassName}>233.0 bits</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>4×</td>
+                <td className={dataCellClassName}>210.0 bits</td>
+              </tr>
+              <tr>
+                <td className={dataCellClassName}>8×</td>
+                <td className={dataCellClassName}>187.0 bits</td>
+              </tr>
+            </tbody>
+          </table>
+          <a href="https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf">
+            Read the riffle-shuffle analysis
+          </a>
+        </Note>
+        <p className={calloutClassName}>
           Procedure and analysis adapted from{" "}
           <a href="https://gist.github.com/BullishNode/840e2b001f611b9b1f45dc900510166d">
             Generating a 24-Word BIP39 Phrase with Playing Cards
@@ -749,8 +739,28 @@ function BandHeading({
   );
 }
 
-function Note({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn(noteClassName, className)} {...props} />;
+function Note({
+  lead,
+  children,
+  className,
+}: {
+  lead: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid gap-y-1.5 border-t border-rule py-4 md:grid-cols-[13rem_minmax(0,1fr)] md:gap-x-12 md:gap-y-0",
+        className,
+      )}
+    >
+      <strong className="text-sm font-semibold text-ink-1">{lead}</strong>
+      <div className="max-w-2xl space-y-2.5 text-note leading-[1.55] text-ink-2 [&_a]:inline-block [&_a]:font-medium [&_a]:text-ink-1 [&_a]:underline [&_a]:decoration-rule-strong [&_a]:underline-offset-[3px] [&_a]:transition-[text-decoration-color] [&_a]:duration-150 [&_a]:ease-[ease] [&_a:hover]:decoration-current [&_a:focus-visible]:decoration-current">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function LookupPage({
